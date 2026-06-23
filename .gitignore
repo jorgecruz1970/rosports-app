@@ -1,0 +1,55 @@
+# Secretos y entornos — NUNCA commitear
+.env
+.env.local
+.env.production
+*.pem
+*.p12
+*.keystore
+google-services.json
+GoogleService-Info.plist
+AuthKey_*.p8
+
+# Flutter / Dart
+mobile/.dart_tool/
+mobile/build/
+mobile/.flutter-plugins
+mobile/.flutter-plugins-dependencies
+mobile/.packages
+mobile/pubspec.lock
+
+# Android
+mobile/android/.gradle/
+mobile/android/local.properties
+mobile/android/key.properties
+mobile/android/app/google-services.json
+
+# iOS
+mobile/ios/Pods/
+mobile/ios/.symlinks/
+mobile/ios/Flutter/Flutter.framework
+mobile/ios/Flutter/Flutter.podspec
+mobile/ios/Runner.xcworkspace/xcshareddata/
+mobile/ios/GoogleService-Info.plist
+
+# Supabase
+.supabase/
+
+# Node (Edge Functions)
+backend/node_modules/
+backend/.npm/
+
+# IDEs
+.idea/
+.vscode/settings.json
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Fastlane
+mobile/ios/fastlane/report.xml
+mobile/android/fastlane/report.xml

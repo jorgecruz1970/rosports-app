@@ -1,0 +1,39 @@
+name: CI — Lint & Tests
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  flutter_checks:
+    name: Flutter Analyze & Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.19.0'
+          channel: stable
+          cache: true
+
+      - name: Instalar dependencias
+        working-directory: mobile
+        run: flutter pub get
+
+      - name: Análisis estático
+        working-directory: mobile
+        run: flutter analyze --fatal-infos
+
+      - name: Ejecutar tests
+        working-directory: mobile
+        run: flutter test --coverage
+
+      - name: Verificar formato
+        working-directory: mobile
+        run: dart format --set-exit-if-changed .

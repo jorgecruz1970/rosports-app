@@ -1,0 +1,48 @@
+default_platform(:android)
+
+platform :android do
+
+  desc "Subir AAB al track Internal de Play Console"
+  lane :internal do
+    upload_to_play_store(
+      track: "internal",
+      aab: "../build/app/outputs/bundle/release/app-release.aab",
+      json_key_data: ENV["PLAY_STORE_JSON_KEY"],
+      package_name: "app.rosports.mobile",
+      skip_upload_apk: true,
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true
+    )
+  end
+
+  desc "Promover de Internal a Alpha"
+  lane :alpha do
+    upload_to_play_store(
+      track: "internal",
+      track_promote_to: "alpha",
+      json_key_data: ENV["PLAY_STORE_JSON_KEY"],
+      package_name: "app.rosports.mobile"
+    )
+  end
+
+  desc "Promover de Alpha a Beta"
+  lane :beta do
+    upload_to_play_store(
+      track: "alpha",
+      track_promote_to: "beta",
+      json_key_data: ENV["PLAY_STORE_JSON_KEY"],
+      package_name: "app.rosports.mobile"
+    )
+  end
+
+  desc "Promover de Beta a Producción"
+  lane :release do
+    upload_to_play_store(
+      track: "beta",
+      track_promote_to: "production",
+      json_key_data: ENV["PLAY_STORE_JSON_KEY"],
+      package_name: "app.rosports.mobile"
+    )
+  end
+end
