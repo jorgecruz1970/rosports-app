@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -91,7 +91,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     style: TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 8),
                 Text('Inicia sesión para reservar tu cancha',
-                    style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 15)),
+                    style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 15)),
                 const SizedBox(height: 32),
                 // Email
                 TextFormField(
@@ -100,10 +100,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   style: const TextStyle(color: Colors.white),
                   decoration: InputDecoration(
                     labelText: 'Email',
-                    labelStyle: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
+                    labelStyle: TextStyle(color: Colors.white.withOpacity(0.7)),
                     prefixIcon: const Icon(Icons.email_outlined, color: AppTheme.primary),
                     filled: true,
-                    fillColor: Colors.white.withValues(alpha: 0.1),
+                    fillColor: Colors.white.withOpacity(0.1),
                     border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                   ),
@@ -118,7 +118,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   style: const TextStyle(color: Colors.white),
                   decoration: InputDecoration(
                     labelText: 'Contraseña',
-                    labelStyle: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
+                    labelStyle: TextStyle(color: Colors.white.withOpacity(0.7)),
                     prefixIcon: const Icon(Icons.lock_outline, color: AppTheme.primary),
                     suffixIcon: IconButton(
                       icon: Icon(
@@ -128,7 +128,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       onPressed: () => setState(() => _obscure = !_obscure),
                     ),
                     filled: true,
-                    fillColor: Colors.white.withValues(alpha: 0.1),
+                    fillColor: Colors.white.withOpacity(0.1),
                     border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                   ),
@@ -155,13 +155,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 ),
                 const SizedBox(height: 24),
                 Row(children: [
-                  Expanded(child: Divider(color: Colors.white.withValues(alpha: 0.3))),
+                  Expanded(child: Divider(color: Colors.white.withOpacity(0.3))),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 12),
                     child: Text('o continúa con',
-                        style: TextStyle(color: Colors.white.withValues(alpha: 0.5))),
+                        style: TextStyle(color: Colors.white.withOpacity(0.5))),
                   ),
-                  Expanded(child: Divider(color: Colors.white.withValues(alpha: 0.3))),
+                  Expanded(child: Divider(color: Colors.white.withOpacity(0.3))),
                 ]),
                 const SizedBox(height: 16),
                 OutlinedButton.icon(
@@ -171,7 +171,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       style: TextStyle(color: Colors.white)),
                   style: OutlinedButton.styleFrom(
                     minimumSize: const Size(double.infinity, 52),
-                    side: BorderSide(color: Colors.white.withValues(alpha: 0.3)),
+                    side: BorderSide(color: Colors.white.withOpacity(0.3)),
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12)),
                   ),
@@ -181,7 +181,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text('¿No tienes cuenta?',
-                        style: TextStyle(color: Colors.white.withValues(alpha: 0.7))),
+                        style: TextStyle(color: Colors.white.withOpacity(0.7))),
                     TextButton(
                       onPressed: () => context.push(AppRoutes.register),
                       child: const Text('Regístrate',

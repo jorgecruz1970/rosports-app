@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -55,7 +55,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
             const SizedBox(height: 8),
             Text('Reserva tu cancha',
                 style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.7), fontSize: 16)),
+                    color: Colors.white.withOpacity(0.7), fontSize: 16)),
             const SizedBox(height: 48),
             const CircularProgressIndicator(color: AppTheme.primary),
           ],
