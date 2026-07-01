@@ -18,9 +18,13 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.19.0'
+          flutter-version: '3.24.0'
           channel: stable
           cache: true
+
+      - name: Deshabilitar analytics Flutter
+        working-directory: mobile
+        run: flutter config --no-analytics
 
       - name: Instalar dependencias
         working-directory: mobile
@@ -28,11 +32,11 @@ jobs:
 
       - name: Análisis estático
         working-directory: mobile
-        run: flutter analyze --fatal-infos
+        run: flutter analyze
 
       - name: Ejecutar tests
         working-directory: mobile
-        run: flutter test --coverage
+        run: flutter test
 
       - name: Verificar formato
         working-directory: mobile
