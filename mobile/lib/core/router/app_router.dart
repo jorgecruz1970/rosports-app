@@ -1,37 +1,38 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../presentation/screens/admin/admin_dashboard_screen.dart';
+import '../../presentation/screens/auth/forgot_password_screen.dart';
 import '../../presentation/screens/auth/login_screen.dart';
 import '../../presentation/screens/auth/register_screen.dart';
-import '../../presentation/screens/auth/forgot_password_screen.dart';
-import '../../presentation/screens/courts/courts_screen.dart';
-import '../../presentation/screens/courts/court_detail_screen.dart';
-import '../../presentation/screens/booking/booking_summary_screen.dart';
 import '../../presentation/screens/booking/booking_confirmation_screen.dart';
-import '../../presentation/screens/matches/matches_screen.dart';
-import '../../presentation/screens/matches/match_detail_screen.dart';
-import '../../presentation/screens/profile/profile_screen.dart';
-import '../../presentation/screens/admin/admin_dashboard_screen.dart';
+import '../../presentation/screens/booking/booking_summary_screen.dart';
+import '../../presentation/screens/courts/court_detail_screen.dart';
+import '../../presentation/screens/courts/courts_screen.dart';
 import '../../presentation/screens/home_screen.dart';
+import '../../presentation/screens/matches/match_detail_screen.dart';
+import '../../presentation/screens/matches/matches_screen.dart';
+import '../../presentation/screens/profile/profile_screen.dart';
 import '../../presentation/screens/splash_screen.dart';
 
 part 'app_router.g.dart';
 
 abstract class AppRoutes {
-  static const splash          = '/';
-  static const login           = '/login';
-  static const register        = '/register';
-  static const forgotPassword  = '/forgot-password';
-  static const home            = '/home';
-  static const courts          = '/courts';
-  static const courtDetail     = '/courts/:id';
-  static const bookingSummary  = '/booking/summary';
-  static const bookingConfirm  = '/booking/confirmation';
-  static const matches         = '/matches';
-  static const matchDetail     = '/matches/:id';
-  static const profile         = '/profile';
-  static const admin           = '/admin';
+  static const splash         = '/';
+  static const login          = '/login';
+  static const register       = '/register';
+  static const forgotPassword = '/forgot-password';
+  static const home           = '/home';
+  static const courts         = '/courts';
+  static const courtDetail    = '/courts/:id';
+  static const bookingSummary = '/booking/summary';
+  static const bookingConfirm = '/booking/confirmation';
+  static const matches        = '/matches';
+  static const matchDetail    = '/matches/:id';
+  static const profile        = '/profile';
+  static const admin          = '/admin';
 }
 
 @riverpod
@@ -39,6 +40,19 @@ GoRouter appRouter(AppRouterRef ref) {
   return GoRouter(
     initialLocation: AppRoutes.splash,
     debugLogDiagnostics: true,
+    // Redirige según sesión activa de Supabase
+    redirect: (context, state) {
+      final session = Supabase.instance.client.auth.currentSession;
+      final isAuth = session != null;
+      final isOnAuthRoute = state.matchedLocation == AppRoutes.login ||
+          state.matchedLocation == AppRoutes.register ||
+          state.matchedLocation == AppRoutes.forgotPassword ||
+          state.matchedLocation == AppRoutes.splash;
+
+      if (!isAuth && !isOnAuthRoute) return AppRoutes.login;
+      if (isAuth && state.matchedLocation == AppRoutes.login) return AppRoutes.home;
+      return null;
+    },
     routes: [
       GoRoute(path: AppRoutes.splash,         builder: (c, s) => const SplashScreen()),
       GoRoute(path: AppRoutes.login,          builder: (c, s) => const LoginScreen()),

@@ -21,7 +21,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   }
 
   Future<void> _redirect() async {
-    await Future.delayed(const Duration(seconds: 2));
+    // Espera mínima para mostrar splash
+    await Future.delayed(const Duration(milliseconds: 1500));
     if (!mounted) return;
 
     final session = Supabase.instance.client.auth.currentSession;
@@ -36,10 +37,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Logo placeholder — reemplazar con imagen real
             Container(
-              width: 100,
-              height: 100,
+              width: 100, height: 100,
               decoration: BoxDecoration(
                 color: AppTheme.primary,
                 borderRadius: BorderRadius.circular(24),
@@ -47,23 +46,16 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
               child: const Icon(Icons.sports_soccer, size: 56, color: Colors.white),
             ),
             const SizedBox(height: 24),
-            const Text(
-              'ROSports',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 36,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 1.5,
-              ),
-            ),
+            const Text('ROSports',
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 36,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1.5)),
             const SizedBox(height: 8),
-            Text(
-              'Reserva tu cancha',
-              style: TextStyle(
-                color: Colors.white.withOpacity(0.7),
-                fontSize: 16,
-              ),
-            ),
+            Text('Reserva tu cancha',
+                style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.7), fontSize: 16)),
             const SizedBox(height: 48),
             const CircularProgressIndicator(color: AppTheme.primary),
           ],

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:supabase_flutter/supabase_flutter.dart'
+    hide AuthException;
 
 import 'core/config/env.dart';
 import 'core/router/app_router.dart';
@@ -15,9 +16,12 @@ Future<void> main() async {
     url: Env.supabaseUrl,
     // ignore: deprecated_member_use
     anonKey: Env.supabaseAnonKey,
+    authOptions: const FlutterAuthClientOptions(
+      authFlowType: AuthFlowType.pkce, // más seguro para móvil
+    ),
   );
 
-  // Inicializar Sentry (monitoreo de errores en producción)
+  // Inicializar Sentry (monitoreo de errores)
   await SentryFlutter.init(
     (options) {
       options.dsn = Env.sentryDsn;

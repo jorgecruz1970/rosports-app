@@ -24,7 +24,18 @@ hotfix/xxx  → main + develop
 
 ## 2. Branch Protection Rules
 
-### Configurar en: Settings → Branches → Add rule
+> ⚠️ **Nota:** Las branch protection rules en repos **privados** requieren
+> GitHub Team ($4/mes) o Enterprise. En plan Free solo funcionan en repos públicos.
+>
+> **Opciones disponibles:**
+> - **Opción A (recomendada MVP):** Hacer el repo público — las reglas funcionan gratis
+>   y GitHub Actions tiene 2.000 min/mes gratis vs 500 en privado.
+>   Settings → General → Change repository visibility → Make public
+> - **Opción B:** Upgradar a GitHub Team ($4/mes)
+> - **Opción C:** Mantener privado sin protecciones técnicas — el CI/CD igual corre
+>   en cada push y avisa si algo falla. Válido para 1 solo dev.
+
+### Si eliges Opción A o B — configurar estas reglas:
 
 #### Regla para `main`
 - Branch name pattern: `main`
