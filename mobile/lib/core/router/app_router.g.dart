@@ -9,9 +9,8 @@ part of 'app_router.dart';
 
 String _$appRouterHash() => r'rosports_router_v1';
 
-/// Provider auto-generado para [appRouter].
 @ProviderFor(appRouter)
-final appRouterProvider = AutoDisposeProvider<GoRouter>.internal(
+final appRouterProvider = Provider<GoRouter>.internal(
   appRouter,
   name: r'appRouterProvider',
   debugGetCreateSourceHash:
@@ -20,4 +19,5 @@ final appRouterProvider = AutoDisposeProvider<GoRouter>.internal(
   allTransitiveDependencies: null,
 );
 
-typedef AppRouterRef = AutoDisposeProviderRef<GoRouter>;
+// ignore: deprecated_member_use
+typedef AppRouterRef = ProviderRef<GoRouter>;

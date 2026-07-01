@@ -29,7 +29,9 @@ class BookingSummaryScreen extends StatelessWidget {
             _DetailRow(label: 'Horario', value: '19:00 – 20:00'),
             _DetailRow(label: 'Deporte', value: 'Fútbol 5'),
             const Divider(height: 32),
-            _DetailRow(label: 'Precio cancha', value: '\$${price.toStringAsFixed(0)} COP'),
+            _DetailRow(
+                label: 'Precio cancha',
+                value: '\$${price.toStringAsFixed(0)} COP'),
             _DetailRow(
               label: 'Comisión de servicio (10%)',
               value: '\$${commission.toStringAsFixed(0)} COP',
@@ -39,9 +41,14 @@ class BookingSummaryScreen extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Total a pagar', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                const Text('Total a pagar',
+                    style:
+                        TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                 Text('\$${total.toStringAsFixed(0)} COP',
-                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.primary)),
+                    style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.primary)),
               ],
             ),
             const Spacer(),
@@ -57,8 +64,11 @@ class BookingSummaryScreen extends StatelessWidget {
                 children: [
                   Icon(Icons.info_outline, color: Colors.orange, size: 18),
                   SizedBox(width: 8),
-                  Expanded(child: Text('Cancelación gratuita hasta 24h antes. Pasado ese plazo se aplica penalización.',
-                      style: TextStyle(fontSize: 12, color: Colors.orange))),
+                  Expanded(
+                      child: Text(
+                          'Cancelación gratuita hasta 24h antes. Pasado ese plazo se aplica penalización.',
+                          style:
+                              TextStyle(fontSize: 12, color: Colors.orange))),
                 ],
               ),
             ),
@@ -76,7 +86,8 @@ class BookingSummaryScreen extends StatelessWidget {
 }
 
 class _DetailRow extends StatelessWidget {
-  const _DetailRow({required this.label, required this.value, this.subtle = false});
+  const _DetailRow(
+      {required this.label, required this.value, this.subtle = false});
   final String label;
   final String value;
   final bool subtle;
@@ -88,8 +99,15 @@ class _DetailRow extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: TextStyle(color: subtle ? Colors.grey : Colors.black87, fontSize: subtle ? 13 : 15)),
-          Text(value, style: TextStyle(fontWeight: FontWeight.w600, color: subtle ? Colors.grey : Colors.black, fontSize: subtle ? 13 : 15)),
+          Text(label,
+              style: TextStyle(
+                  color: subtle ? Colors.grey : Colors.black87,
+                  fontSize: subtle ? 13 : 15)),
+          Text(value,
+              style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  color: subtle ? Colors.grey : Colors.black,
+                  fontSize: subtle ? 13 : 15)),
         ],
       ),
     );

@@ -17,22 +17,38 @@ class MatchDetailScreen extends StatelessWidget {
             const Text('Partido Fútbol 5',
                 style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
             const SizedBox(height: 16),
-            _InfoRow(icon: Icons.location_on_outlined, text: 'Complejo Deportivo Norte — Bogotá'),
-            _InfoRow(icon: Icons.access_time, text: 'Viernes 27 Jun 2026 — 19:00 – 20:00'),
-            _InfoRow(icon: Icons.attach_money, text: '\$13.200 COP por jugador'),
-            _InfoRow(icon: Icons.people_outline, text: '7 de 10 plazas ocupadas'),
+            _InfoRow(
+                icon: Icons.location_on_outlined,
+                text: 'Complejo Deportivo Norte — Bogotá'),
+            _InfoRow(
+                icon: Icons.access_time,
+                text: 'Viernes 27 Jun 2026 — 19:00 – 20:00'),
+            _InfoRow(
+                icon: Icons.attach_money, text: '\$13.200 COP por jugador'),
+            _InfoRow(
+                icon: Icons.people_outline, text: '7 de 10 plazas ocupadas'),
             const SizedBox(height: 24),
             const Text('Jugadores inscritos',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             const SizedBox(height: 12),
-            ...List.generate(7, (i) => ListTile(
-              leading: CircleAvatar(
-                backgroundColor: AppTheme.primary.withOpacity(0.2),
-                child: Text('J${i + 1}', style: const TextStyle(color: AppTheme.primary, fontWeight: FontWeight.bold)),
-              ),
-              title: Text('Jugador ${i + 1}'),
-              subtitle: Text(['Portero', 'Defensa', 'Mediocampista', 'Delantero'][i % 4]),
-            )),
+            ...List.generate(
+                7,
+                (i) => ListTile(
+                      leading: CircleAvatar(
+                        backgroundColor: AppTheme.primary.withOpacity(0.2),
+                        child: Text('J${i + 1}',
+                            style: const TextStyle(
+                                color: AppTheme.primary,
+                                fontWeight: FontWeight.bold)),
+                      ),
+                      title: Text('Jugador ${i + 1}'),
+                      subtitle: Text([
+                        'Portero',
+                        'Defensa',
+                        'Mediocampista',
+                        'Delantero'
+                      ][i % 4]),
+                    )),
             const SizedBox(height: 24),
             ElevatedButton.icon(
               onPressed: () {}, // TODO: unirse al partido + pago

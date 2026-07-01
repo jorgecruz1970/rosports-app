@@ -35,9 +35,13 @@ class MatchesScreen extends StatelessWidget {
 
 class _MatchCard extends StatelessWidget {
   const _MatchCard({
-    required this.sport, required this.venue, required this.date,
-    required this.spotsAvailable, required this.spotsTotal,
-    required this.pricePerPlayer, required this.onTap,
+    required this.sport,
+    required this.venue,
+    required this.date,
+    required this.spotsAvailable,
+    required this.spotsTotal,
+    required this.pricePerPlayer,
+    required this.onTap,
   });
 
   final String sport, venue, date;
@@ -60,29 +64,39 @@ class _MatchCard extends StatelessWidget {
               Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
                       color: AppTheme.primary.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(20),
                     ),
-                    child: Text(sport, style: const TextStyle(color: AppTheme.primary, fontWeight: FontWeight.bold, fontSize: 12)),
+                    child: Text(sport,
+                        style: const TextStyle(
+                            color: AppTheme.primary,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12)),
                   ),
                   const Spacer(),
                   Text('\$${pricePerPlayer.toStringAsFixed(0)} / jugador',
-                      style: const TextStyle(color: AppTheme.primary, fontWeight: FontWeight.bold)),
+                      style: const TextStyle(
+                          color: AppTheme.primary,
+                          fontWeight: FontWeight.bold)),
                 ],
               ),
               const SizedBox(height: 10),
               Row(children: [
-                const Icon(Icons.location_on_outlined, size: 14, color: Colors.grey),
+                const Icon(Icons.location_on_outlined,
+                    size: 14, color: Colors.grey),
                 const SizedBox(width: 4),
-                Text(venue, style: const TextStyle(color: Colors.grey, fontSize: 13)),
+                Text(venue,
+                    style: const TextStyle(color: Colors.grey, fontSize: 13)),
               ]),
               const SizedBox(height: 4),
               Row(children: [
                 const Icon(Icons.access_time, size: 14, color: Colors.grey),
                 const SizedBox(width: 4),
-                Text(date, style: const TextStyle(color: Colors.grey, fontSize: 13)),
+                Text(date,
+                    style: const TextStyle(color: Colors.grey, fontSize: 13)),
               ]),
               const SizedBox(height: 12),
               LinearProgressIndicator(

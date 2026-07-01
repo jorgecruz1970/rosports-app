@@ -104,36 +104,49 @@ class _CourtCard extends StatelessWidget {
           child: Row(
             children: [
               Container(
-                width: 64, height: 64,
+                width: 64,
+                height: 64,
                 decoration: BoxDecoration(
                   color: AppTheme.primary.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(Icons.sports_soccer, color: AppTheme.primary, size: 32),
+                child: const Icon(Icons.sports_soccer,
+                    color: AppTheme.primary, size: 32),
               ),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                    Text(name,
+                        style: const TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 15)),
                     const SizedBox(height: 4),
-                    Text(venue, style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
+                    Text(venue,
+                        style: TextStyle(
+                            color: Colors.grey.shade600, fontSize: 13)),
                     const SizedBox(height: 8),
                     Row(
                       children: [
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 3),
                           decoration: BoxDecoration(
                             color: AppTheme.primary.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          child: Text(sport, style: const TextStyle(color: AppTheme.primary, fontSize: 12, fontWeight: FontWeight.w600)),
+                          child: Text(sport,
+                              style: const TextStyle(
+                                  color: AppTheme.primary,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600)),
                         ),
                         const Spacer(),
                         Text(
                           '\$${price.toStringAsFixed(0)} COP/h',
-                          style: const TextStyle(fontWeight: FontWeight.bold, color: AppTheme.primary),
+                          style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: AppTheme.primary),
                         ),
                       ],
                     ),
