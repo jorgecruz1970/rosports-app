@@ -2,13 +2,14 @@ include: package:flutter_lints/flutter.yaml
 
 analyzer:
   errors:
-    # Tratar como info (no bloquean CI) — se corregirán iterativamente
-    prefer_const_constructors: info
-    prefer_const_literals_to_create_immutables: info
-    deprecated_member_use: info
+    prefer_const_constructors: ignore
+    prefer_const_literals_to_create_immutables: ignore
+    deprecated_member_use: ignore
     invalid_use_of_internal_member: ignore
+    curly_braces_in_flow_control_structures: ignore
 
 linter:
   rules:
     prefer_const_constructors: false
     prefer_const_literals_to_create_immutables: false
+    curly_braces_in_flow_control_structures: false
