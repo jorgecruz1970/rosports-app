@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -14,10 +14,10 @@ class LoginScreen extends ConsumerStatefulWidget {
 }
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
-  final _formKey   = GlobalKey<FormState>();
+  final _formKey = GlobalKey<FormState>();
   final _emailCtrl = TextEditingController();
-  final _passCtrl  = TextEditingController();
-  bool _obscure    = true;
+  final _passCtrl = TextEditingController();
+  bool _obscure = true;
 
   @override
   void dispose() {
@@ -29,13 +29,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Future<void> _login() async {
     if (!_formKey.currentState!.validate()) return;
     await ref.read(authNotifierProvider.notifier).login(
-      email:    _emailCtrl.text.trim(),
-      password: _passCtrl.text,
-    );
+          email: _emailCtrl.text.trim(),
+          password: _passCtrl.text,
+        );
     if (!mounted) return;
     final state = ref.read(authNotifierProvider);
     state.whenOrNull(
-      data: (user) { if (user != null) context.go(AppRoutes.home); },
+      data: (user) {
+        if (user != null) context.go(AppRoutes.home);
+      },
       error: (e, _) => _showError(e.toString()),
     );
   }
@@ -60,8 +62,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     // Escuchar cambios de estado para navegar
     ref.listen(authNotifierProvider, (_, next) {
       next.whenOrNull(
-        data: (user) { if (user != null && mounted) context.go(AppRoutes.home); },
-        error: (e, _) { if (mounted) _showError(e.toString()); },
+        data: (user) {
+          if (user != null && mounted) context.go(AppRoutes.home);
+        },
+        error: (e, _) {
+          if (mounted) _showError(e.toString());
+        },
       );
     });
 
@@ -78,20 +84,26 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 const SizedBox(height: 40),
                 Center(
                   child: Container(
-                    width: 72, height: 72,
+                    width: 72,
+                    height: 72,
                     decoration: BoxDecoration(
                       color: AppTheme.primary,
                       borderRadius: BorderRadius.circular(18),
                     ),
-                    child: const Icon(Icons.sports_soccer, size: 40, color: Colors.white),
+                    child: const Icon(Icons.sports_soccer,
+                        size: 40, color: Colors.white),
                   ),
                 ),
                 const SizedBox(height: 32),
                 const Text('Bienvenido',
-                    style: TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.bold)),
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold)),
                 const SizedBox(height: 8),
                 Text('Inicia sesión para reservar tu cancha',
-                    style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 15)),
+                    style: TextStyle(
+                        color: Colors.white.withOpacity(0.7), fontSize: 15)),
                 const SizedBox(height: 32),
                 // Email
                 TextFormField(
@@ -101,11 +113,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   decoration: InputDecoration(
                     labelText: 'Email',
                     labelStyle: TextStyle(color: Colors.white.withOpacity(0.7)),
-                    prefixIcon: const Icon(Icons.email_outlined, color: AppTheme.primary),
+                    prefixIcon: const Icon(Icons.email_outlined,
+                        color: AppTheme.primary),
                     filled: true,
                     fillColor: Colors.white.withOpacity(0.1),
                     border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none),
                   ),
                   validator: (v) =>
                       (v == null || !v.contains('@')) ? 'Email inválido' : null,
@@ -119,10 +133,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   decoration: InputDecoration(
                     labelText: 'Contraseña',
                     labelStyle: TextStyle(color: Colors.white.withOpacity(0.7)),
-                    prefixIcon: const Icon(Icons.lock_outline, color: AppTheme.primary),
+                    prefixIcon:
+                        const Icon(Icons.lock_outline, color: AppTheme.primary),
                     suffixIcon: IconButton(
                       icon: Icon(
-                        _obscure ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                        _obscure
+                            ? Icons.visibility_outlined
+                            : Icons.visibility_off_outlined,
                         color: AppTheme.primary,
                       ),
                       onPressed: () => setState(() => _obscure = !_obscure),
@@ -130,10 +147,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     filled: true,
                     fillColor: Colors.white.withOpacity(0.1),
                     border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none),
                   ),
-                  validator: (v) =>
-                      (v == null || v.length < 6) ? 'Mínimo 6 caracteres' : null,
+                  validator: (v) => (v == null || v.length < 6)
+                      ? 'Mínimo 6 caracteres'
+                      : null,
                 ),
                 const SizedBox(height: 8),
                 Align(
@@ -149,24 +168,30 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 ElevatedButton(
                   onPressed: isLoading ? null : _login,
                   child: isLoading
-                      ? const SizedBox(height: 20, width: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                              strokeWidth: 2, color: Colors.white))
                       : const Text('Iniciar sesión'),
                 ),
                 const SizedBox(height: 24),
                 Row(children: [
-                  Expanded(child: Divider(color: Colors.white.withOpacity(0.3))),
+                  Expanded(
+                      child: Divider(color: Colors.white.withOpacity(0.3))),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 12),
                     child: Text('o continúa con',
                         style: TextStyle(color: Colors.white.withOpacity(0.5))),
                   ),
-                  Expanded(child: Divider(color: Colors.white.withOpacity(0.3))),
+                  Expanded(
+                      child: Divider(color: Colors.white.withOpacity(0.3))),
                 ]),
                 const SizedBox(height: 16),
                 OutlinedButton.icon(
                   onPressed: isLoading ? null : _loginGoogle,
-                  icon: const Icon(Icons.g_mobiledata, color: Colors.white, size: 28),
+                  icon: const Icon(Icons.g_mobiledata,
+                      color: Colors.white, size: 28),
                   label: const Text('Continuar con Google',
                       style: TextStyle(color: Colors.white)),
                   style: OutlinedButton.styleFrom(
@@ -186,7 +211,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       onPressed: () => context.push(AppRoutes.register),
                       child: const Text('Regístrate',
                           style: TextStyle(
-                              color: AppTheme.primary, fontWeight: FontWeight.bold)),
+                              color: AppTheme.primary,
+                              fontWeight: FontWeight.bold)),
                     ),
                   ],
                 ),

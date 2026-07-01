@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -38,12 +38,14 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              width: 100, height: 100,
+              width: 100,
+              height: 100,
               decoration: BoxDecoration(
                 color: AppTheme.primary,
                 borderRadius: BorderRadius.circular(24),
               ),
-              child: const Icon(Icons.sports_soccer, size: 56, color: Colors.white),
+              child: const Icon(Icons.sports_soccer,
+                  size: 56, color: Colors.white),
             ),
             const SizedBox(height: 24),
             const Text('ROSports',

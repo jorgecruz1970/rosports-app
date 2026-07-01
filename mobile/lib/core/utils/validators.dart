@@ -61,7 +61,8 @@ class Validators {
 
   // ── Campo requerido genérico ─────────────────────────────────────────────────
   /// Valida que el campo no esté vacío.
-  static String? validateRequired(String? value, {String fieldName = 'Este campo'}) {
+  static String? validateRequired(String? value,
+      {String fieldName = 'Este campo'}) {
     if (value == null || value.trim().isEmpty) {
       return '$fieldName es obligatorio';
     }

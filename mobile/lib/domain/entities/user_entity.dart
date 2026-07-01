@@ -24,7 +24,8 @@ class UserEntity extends Equatable {
   final UserRole role;
 
   @override
-  List<Object?> get props => [id, email, name, phone, avatarUrl, level, points, role];
+  List<Object?> get props =>
+      [id, email, name, phone, avatarUrl, level, points, role];
 }
 
 enum PlayerLevel { beginner, intermediate, advanced }

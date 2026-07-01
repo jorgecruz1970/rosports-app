@@ -50,7 +50,8 @@ class AuthRemoteDatasource {
     } on AuthException {
       rethrow;
     } on AuthApiException catch (e) {
-      throw AuthException(_mapSupabaseMessage(e.message), code: e.statusCode?.toString());
+      throw AuthException(_mapSupabaseMessage(e.message),
+          code: e.statusCode?.toString());
     } catch (e) {
       throw AuthException('Error inesperado: ${e.toString()}', code: 'unknown');
     }
@@ -78,7 +79,8 @@ class AuthRemoteDatasource {
     } on AuthException {
       rethrow;
     } on AuthApiException catch (e) {
-      throw AuthException(_mapSupabaseMessage(e.message), code: e.statusCode?.toString());
+      throw AuthException(_mapSupabaseMessage(e.message),
+          code: e.statusCode?.toString());
     } catch (e) {
       throw AuthException('Error inesperado: ${e.toString()}', code: 'unknown');
     }
@@ -94,9 +96,11 @@ class AuthRemoteDatasource {
         redirectTo: 'rosports://auth/callback',
       );
     } on AuthApiException catch (e) {
-      throw AuthException(_mapSupabaseMessage(e.message), code: e.statusCode?.toString());
+      throw AuthException(_mapSupabaseMessage(e.message),
+          code: e.statusCode?.toString());
     } catch (e) {
-      throw AuthException('Error con Google Sign In: ${e.toString()}', code: 'google_error');
+      throw AuthException('Error con Google Sign In: ${e.toString()}',
+          code: 'google_error');
     }
   }
 
@@ -109,9 +113,11 @@ class AuthRemoteDatasource {
         redirectTo: 'rosports://auth/callback',
       );
     } on AuthApiException catch (e) {
-      throw AuthException(_mapSupabaseMessage(e.message), code: e.statusCode?.toString());
+      throw AuthException(_mapSupabaseMessage(e.message),
+          code: e.statusCode?.toString());
     } catch (e) {
-      throw AuthException('Error con Apple Sign In: ${e.toString()}', code: 'apple_error');
+      throw AuthException('Error con Apple Sign In: ${e.toString()}',
+          code: 'apple_error');
     }
   }
 
@@ -133,9 +139,11 @@ class AuthRemoteDatasource {
         redirectTo: 'rosports://auth/reset-password',
       );
     } on AuthApiException catch (e) {
-      throw AuthException(_mapSupabaseMessage(e.message), code: e.statusCode?.toString());
+      throw AuthException(_mapSupabaseMessage(e.message),
+          code: e.statusCode?.toString());
     } catch (e) {
-      throw AuthException('Error al enviar el correo: ${e.toString()}', code: 'reset_error');
+      throw AuthException('Error al enviar el correo: ${e.toString()}',
+          code: 'reset_error');
     }
   }
 

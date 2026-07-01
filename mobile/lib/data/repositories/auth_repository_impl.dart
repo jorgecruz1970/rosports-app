@@ -1,5 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart'
-    hide AuthException; // ocultar AuthException de supabase para usar la nuestra
+    hide
+        AuthException; // ocultar AuthException de supabase para usar la nuestra
 
 import '../../core/constants/app_constants.dart';
 import '../../core/errors/app_exception.dart';
@@ -30,14 +31,15 @@ class AuthRepositoryImpl implements AuthRepository {
 
       final user = response.user;
       if (user == null) {
-        throw const RoAuthException('No se pudo crear la cuenta. Intenta de nuevo.');
+        throw const RoAuthException(
+            'No se pudo crear la cuenta. Intenta de nuevo.');
       }
 
       await _supabase.from(AppConstants.tableProfiles).upsert({
-        'id':    user.id,
+        'id': user.id,
         'email': email,
-        'name':  name,
-        'role':  'player',
+        'name': name,
+        'role': 'player',
       });
 
       return await _getProfile(user.id, email);
@@ -63,7 +65,8 @@ class AuthRepositoryImpl implements AuthRepository {
       );
 
       final user = response.user;
-      if (user == null) throw const RoAuthException('No se pudo iniciar sesión.');
+      if (user == null)
+        throw const RoAuthException('No se pudo iniciar sesión.');
 
       return await _getProfile(user.id, email);
     } on RoAuthException {
@@ -84,7 +87,8 @@ class AuthRepositoryImpl implements AuthRepository {
         redirectTo: 'app.rosports.mobile://login-callback',
       );
       final user = _supabase.auth.currentUser;
-      if (user == null) throw const RoAuthException('Login con Google cancelado.');
+      if (user == null)
+        throw const RoAuthException('Login con Google cancelado.');
       return await _getOrCreateProfile(user);
     } on RoAuthException {
       rethrow;
@@ -103,7 +107,8 @@ class AuthRepositoryImpl implements AuthRepository {
         redirectTo: 'app.rosports.mobile://login-callback',
       );
       final user = _supabase.auth.currentUser;
-      if (user == null) throw const RoAuthException('Login con Apple cancelado.');
+      if (user == null)
+        throw const RoAuthException('Login con Apple cancelado.');
       return await _getOrCreateProfile(user);
     } on RoAuthException {
       rethrow;
@@ -145,9 +150,9 @@ class AuthRepositoryImpl implements AuthRepository {
     final user = _supabase.auth.currentUser;
     if (user == null) return null;
     return UserEntity(
-      id:    user.id,
+      id: user.id,
       email: user.email ?? '',
-      name:  user.userMetadata?['name'] as String? ?? '',
+      name: user.userMetadata?['name'] as String? ?? '',
     );
   }
 
@@ -157,9 +162,9 @@ class AuthRepositoryImpl implements AuthRepository {
       final user = event.session?.user;
       if (user == null) return null;
       return UserEntity(
-        id:    user.id,
+        id: user.id,
         email: user.email ?? '',
-        name:  user.userMetadata?['name'] as String? ?? '',
+        name: user.userMetadata?['name'] as String? ?? '',
       );
     });
   }
@@ -173,7 +178,8 @@ class AuthRepositoryImpl implements AuthRepository {
         .eq('id', userId)
         .maybeSingle();
 
-    if (data == null) return UserEntity(id: userId, email: fallbackEmail, name: '');
+    if (data == null)
+      return UserEntity(id: userId, email: fallbackEmail, name: '');
     return ProfileModel.fromJson(data).toEntity();
   }
 
@@ -186,16 +192,16 @@ class AuthRepositoryImpl implements AuthRepository {
 
     if (existing != null) return ProfileModel.fromJson(existing).toEntity();
 
-    final name = user.userMetadata?['full_name'] as String?
-        ?? user.userMetadata?['name'] as String?
-        ?? user.email?.split('@').first
-        ?? 'Usuario';
+    final name = user.userMetadata?['full_name'] as String? ??
+        user.userMetadata?['name'] as String? ??
+        user.email?.split('@').first ??
+        'Usuario';
 
     await _supabase.from(AppConstants.tableProfiles).insert({
-      'id':    user.id,
+      'id': user.id,
       'email': user.email ?? '',
-      'name':  name,
-      'role':  'player',
+      'name': name,
+      'role': 'player',
     });
 
     return UserEntity(id: user.id, email: user.email ?? '', name: name);

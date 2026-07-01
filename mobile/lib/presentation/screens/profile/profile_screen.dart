@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -68,8 +68,7 @@ class _ProfileContent extends ConsumerWidget {
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Salir',
-                style: TextStyle(color: AppTheme.error)),
+            child: const Text('Salir', style: TextStyle(color: AppTheme.error)),
           ),
         ],
       ),
@@ -82,10 +81,14 @@ class _ProfileContent extends ConsumerWidget {
 
   String _levelLabel(PlayerLevel? level) {
     switch (level) {
-      case PlayerLevel.beginner:     return 'Principiante';
-      case PlayerLevel.intermediate: return 'Intermedio';
-      case PlayerLevel.advanced:     return 'Avanzado';
-      case null:                     return 'Sin nivel';
+      case PlayerLevel.beginner:
+        return 'Principiante';
+      case PlayerLevel.intermediate:
+        return 'Intermedio';
+      case PlayerLevel.advanced:
+        return 'Avanzado';
+      case null:
+        return 'Sin nivel';
     }
   }
 
@@ -194,14 +197,16 @@ class _ProfileContent extends ConsumerWidget {
             icon: Icons.privacy_tip_outlined,
             label: 'Política de privacidad',
             onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Próximamente: rosports.app/privacidad')),
+              const SnackBar(
+                  content: Text('Próximamente: rosports.app/privacidad')),
             ),
           ),
           _ProfileOption(
             icon: Icons.help_outline,
             label: 'Ayuda y soporte',
             onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Próximamente: soporte@rosports.app')),
+              const SnackBar(
+                  content: Text('Próximamente: soporte@rosports.app')),
             ),
           ),
           const Divider(),
@@ -227,8 +232,7 @@ class _StatItem extends StatelessWidget {
       children: [
         Text(value,
             style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-        Text(label,
-            style: const TextStyle(color: Colors.grey, fontSize: 13)),
+        Text(label, style: const TextStyle(color: Colors.grey, fontSize: 13)),
       ],
     );
   }

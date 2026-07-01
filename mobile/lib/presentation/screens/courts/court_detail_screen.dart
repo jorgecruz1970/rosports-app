@@ -20,7 +20,9 @@ class CourtDetailScreen extends StatelessWidget {
               title: const Text('Cancha 1 - Fútbol 5'),
               background: Container(
                 color: AppTheme.primary.withOpacity(0.3),
-                child: const Center(child: Icon(Icons.sports_soccer, size: 80, color: Colors.white)),
+                child: const Center(
+                    child: Icon(Icons.sports_soccer,
+                        size: 80, color: Colors.white)),
               ),
             ),
           ),
@@ -32,9 +34,12 @@ class CourtDetailScreen extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      const Icon(Icons.location_on_outlined, color: AppTheme.primary),
+                      const Icon(Icons.location_on_outlined,
+                          color: AppTheme.primary),
                       const SizedBox(width: 8),
-                      const Expanded(child: Text('Complejo Deportivo Norte — Calle 127 #15-40, Bogotá')),
+                      const Expanded(
+                          child: Text(
+                              'Complejo Deportivo Norte — Calle 127 #15-40, Bogotá')),
                     ],
                   ),
                   const SizedBox(height: 16),
@@ -42,33 +47,54 @@ class CourtDetailScreen extends StatelessWidget {
                     children: [
                       _InfoChip(icon: Icons.sports_soccer, label: 'Fútbol 5'),
                       const SizedBox(width: 8),
-                      _InfoChip(icon: Icons.wb_incandescent_outlined, label: 'Con luz'),
+                      _InfoChip(
+                          icon: Icons.wb_incandescent_outlined,
+                          label: 'Con luz'),
                       const SizedBox(width: 8),
                       _InfoChip(icon: Icons.grass, label: 'Grama sint.'),
                     ],
                   ),
                   const SizedBox(height: 24),
-                  const Text('Horarios disponibles', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  const Text('Horarios disponibles',
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 12),
                   // Grid de slots — TODO: conectar con Supabase Realtime
                   GridView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 3, mainAxisSpacing: 8, crossAxisSpacing: 8, childAspectRatio: 2.5),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 3,
+                            mainAxisSpacing: 8,
+                            crossAxisSpacing: 8,
+                            childAspectRatio: 2.5),
                     itemCount: 6,
                     itemBuilder: (ctx, i) {
-                      final times = ['18:00', '19:00', '20:00', '21:00', '22:00', '23:00'];
+                      final times = [
+                        '18:00',
+                        '19:00',
+                        '20:00',
+                        '21:00',
+                        '22:00',
+                        '23:00'
+                      ];
                       final available = i != 1 && i != 4;
                       return GestureDetector(
-                        onTap: available ? () => context.push(AppRoutes.bookingSummary) : null,
+                        onTap: available
+                            ? () => context.push(AppRoutes.bookingSummary)
+                            : null,
                         child: Container(
                           alignment: Alignment.center,
                           decoration: BoxDecoration(
-                            color: available ? AppTheme.primary.withOpacity(0.1) : Colors.grey.shade200,
+                            color: available
+                                ? AppTheme.primary.withOpacity(0.1)
+                                : Colors.grey.shade200,
                             borderRadius: BorderRadius.circular(10),
                             border: Border.all(
-                              color: available ? AppTheme.primary : Colors.grey.shade300),
+                                color: available
+                                    ? AppTheme.primary
+                                    : Colors.grey.shade300),
                           ),
                           child: Text(
                             times[i],
@@ -82,10 +108,15 @@ class CourtDetailScreen extends StatelessWidget {
                     },
                   ),
                   const SizedBox(height: 24),
-                  const Text('Precio', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  const Text('Precio',
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 8),
                   const Text('\$120.000 COP / hora',
-                      style: TextStyle(fontSize: 20, color: AppTheme.primary, fontWeight: FontWeight.bold)),
+                      style: TextStyle(
+                          fontSize: 20,
+                          color: AppTheme.primary,
+                          fontWeight: FontWeight.bold)),
                   const SizedBox(height: 32),
                 ],
               ),
@@ -112,7 +143,12 @@ class _InfoChip extends StatelessWidget {
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
-        children: [Icon(icon, size: 14, color: Colors.grey.shade600), const SizedBox(width: 4), Text(label, style: TextStyle(fontSize: 12, color: Colors.grey.shade700))],
+        children: [
+          Icon(icon, size: 14, color: Colors.grey.shade600),
+          const SizedBox(width: 4),
+          Text(label,
+              style: TextStyle(fontSize: 12, color: Colors.grey.shade700))
+        ],
       ),
     );
   }

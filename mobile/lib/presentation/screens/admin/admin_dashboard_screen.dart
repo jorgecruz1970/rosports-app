@@ -18,29 +18,51 @@ class AdminDashboardScreen extends StatelessWidget {
             const SizedBox(height: 16),
             Row(
               children: [
-                Expanded(child: _MetricCard(label: 'Reservas hoy', value: '8', icon: Icons.calendar_today, color: AppTheme.primary)),
+                Expanded(
+                    child: _MetricCard(
+                        label: 'Reservas hoy',
+                        value: '8',
+                        icon: Icons.calendar_today,
+                        color: AppTheme.primary)),
                 const SizedBox(width: 12),
-                Expanded(child: _MetricCard(label: 'Ingresos hoy', value: '\$960K', icon: Icons.attach_money, color: Colors.green)),
+                Expanded(
+                    child: _MetricCard(
+                        label: 'Ingresos hoy',
+                        value: '\$960K',
+                        icon: Icons.attach_money,
+                        color: Colors.green)),
               ],
             ),
             const SizedBox(height: 12),
             Row(
               children: [
-                Expanded(child: _MetricCard(label: 'Ocupación', value: '80%', icon: Icons.sports_soccer, color: Colors.orange)),
+                Expanded(
+                    child: _MetricCard(
+                        label: 'Ocupación',
+                        value: '80%',
+                        icon: Icons.sports_soccer,
+                        color: Colors.orange)),
                 const SizedBox(width: 12),
-                Expanded(child: _MetricCard(label: 'No-shows', value: '1', icon: Icons.warning_amber_outlined, color: Colors.red)),
+                Expanded(
+                    child: _MetricCard(
+                        label: 'No-shows',
+                        value: '1',
+                        icon: Icons.warning_amber_outlined,
+                        color: Colors.red)),
               ],
             ),
             const SizedBox(height: 28),
             const Text('Reservas de hoy',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 12),
-            ...List.generate(4, (i) => _BookingRow(
-              time: '${18 + i}:00 – ${19 + i}:00',
-              player: 'Jugador ${i + 1}',
-              court: 'Cancha ${(i % 2) + 1}',
-              status: i == 1 ? 'no_show' : 'confirmed',
-            )),
+            ...List.generate(
+                4,
+                (i) => _BookingRow(
+                      time: '${18 + i}:00 – ${19 + i}:00',
+                      player: 'Jugador ${i + 1}',
+                      court: 'Cancha ${(i % 2) + 1}',
+                      status: i == 1 ? 'no_show' : 'confirmed',
+                    )),
           ],
         ),
       ),
@@ -49,7 +71,11 @@ class AdminDashboardScreen extends StatelessWidget {
 }
 
 class _MetricCard extends StatelessWidget {
-  const _MetricCard({required this.label, required this.value, required this.icon, required this.color});
+  const _MetricCard(
+      {required this.label,
+      required this.value,
+      required this.icon,
+      required this.color});
   final String label, value;
   final IconData icon;
   final Color color;
@@ -66,15 +92,22 @@ class _MetricCard extends StatelessWidget {
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Icon(icon, color: color),
         const SizedBox(height: 8),
-        Text(value, style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: color)),
-        Text(label, style: TextStyle(fontSize: 12, color: color.withOpacity(0.8))),
+        Text(value,
+            style: TextStyle(
+                fontSize: 22, fontWeight: FontWeight.bold, color: color)),
+        Text(label,
+            style: TextStyle(fontSize: 12, color: color.withOpacity(0.8))),
       ]),
     );
   }
 }
 
 class _BookingRow extends StatelessWidget {
-  const _BookingRow({required this.time, required this.player, required this.court, required this.status});
+  const _BookingRow(
+      {required this.time,
+      required this.player,
+      required this.court,
+      required this.status});
   final String time, player, court, status;
 
   @override
@@ -83,7 +116,8 @@ class _BookingRow extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       child: ListTile(
-        leading: Icon(Icons.access_time, color: isNoShow ? Colors.red : AppTheme.primary),
+        leading: Icon(Icons.access_time,
+            color: isNoShow ? Colors.red : AppTheme.primary),
         title: Text('$player — $court'),
         subtitle: Text(time),
         trailing: Container(
@@ -95,7 +129,8 @@ class _BookingRow extends StatelessWidget {
           child: Text(
             isNoShow ? 'No-show' : 'Confirmada',
             style: TextStyle(
-              fontSize: 11, fontWeight: FontWeight.bold,
+              fontSize: 11,
+              fontWeight: FontWeight.bold,
               color: isNoShow ? Colors.red : Colors.green,
             ),
           ),

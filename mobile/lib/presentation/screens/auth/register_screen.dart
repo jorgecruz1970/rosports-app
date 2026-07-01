@@ -14,12 +14,12 @@ class RegisterScreen extends ConsumerStatefulWidget {
 }
 
 class _RegisterScreenState extends ConsumerState<RegisterScreen> {
-  final _formKey   = GlobalKey<FormState>();
-  final _nameCtrl  = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+  final _nameCtrl = TextEditingController();
   final _emailCtrl = TextEditingController();
-  final _passCtrl  = TextEditingController();
+  final _passCtrl = TextEditingController();
   bool _acceptedTerms = false;
-  bool _obscure       = true;
+  bool _obscure = true;
 
   @override
   void dispose() {
@@ -33,15 +33,16 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     if (!_formKey.currentState!.validate()) return;
     if (!_acceptedTerms) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Debes aceptar los términos y condiciones')),
+        const SnackBar(
+            content: Text('Debes aceptar los términos y condiciones')),
       );
       return;
     }
     await ref.read(authNotifierProvider.notifier).register(
-      email:    _emailCtrl.text.trim(),
-      password: _passCtrl.text,
-      name:     _nameCtrl.text.trim(),
-    );
+          email: _emailCtrl.text.trim(),
+          password: _passCtrl.text,
+          name: _nameCtrl.text.trim(),
+        );
   }
 
   void _showError(String msg) {
@@ -78,7 +79,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text('¡Únete a ROSports!',
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+                    style:
+                        TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 8),
                 const Text('Crea tu cuenta y empieza a reservar canchas',
                     style: TextStyle(color: Colors.grey)),
@@ -90,8 +92,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     labelText: 'Nombre completo',
                     prefixIcon: Icon(Icons.person_outline),
                   ),
-                  validator: (v) =>
-                      (v == null || v.trim().isEmpty) ? 'Ingresa tu nombre' : null,
+                  validator: (v) => (v == null || v.trim().isEmpty)
+                      ? 'Ingresa tu nombre'
+                      : null,
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
@@ -119,8 +122,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       onPressed: () => setState(() => _obscure = !_obscure),
                     ),
                   ),
-                  validator: (v) =>
-                      (v == null || v.length < 6) ? 'Mínimo 6 caracteres' : null,
+                  validator: (v) => (v == null || v.length < 6)
+                      ? 'Mínimo 6 caracteres'
+                      : null,
                 ),
                 const SizedBox(height: 24),
                 // Aceptar T&C — requerido por Ley 1581
@@ -130,11 +134,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     Checkbox(
                       value: _acceptedTerms,
                       activeColor: AppTheme.primary,
-                      onChanged: (v) => setState(() => _acceptedTerms = v ?? false),
+                      onChanged: (v) =>
+                          setState(() => _acceptedTerms = v ?? false),
                     ),
                     Expanded(
                       child: GestureDetector(
-                        onTap: () => setState(() => _acceptedTerms = !_acceptedTerms),
+                        onTap: () =>
+                            setState(() => _acceptedTerms = !_acceptedTerms),
                         child: const Padding(
                           padding: EdgeInsets.only(top: 12),
                           child: Text.rich(TextSpan(
@@ -164,7 +170,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 ElevatedButton(
                   onPressed: isLoading ? null : _register,
                   child: isLoading
-                      ? const SizedBox(height: 20, width: 20,
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
                           child: CircularProgressIndicator(
                               strokeWidth: 2, color: Colors.white))
                       : const Text('Crear cuenta'),

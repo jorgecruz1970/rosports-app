@@ -14,7 +14,7 @@ class ForgotPasswordScreen extends ConsumerStatefulWidget {
 
 class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
   final _emailCtrl = TextEditingController();
-  bool _sent    = false;
+  bool _sent = false;
   bool _loading = false;
 
   @override
@@ -33,15 +33,18 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
     }
     setState(() => _loading = true);
     try {
-      await ref
-          .read(authNotifierProvider.notifier)
-          .requestPasswordReset(email);
-      if (mounted) setState(() { _loading = false; _sent = true; });
+      await ref.read(authNotifierProvider.notifier).requestPasswordReset(email);
+      if (mounted)
+        setState(() {
+          _loading = false;
+          _sent = true;
+        });
     } catch (e) {
       if (mounted) {
         setState(() => _loading = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString()), backgroundColor: AppTheme.error),
+          SnackBar(
+              content: Text(e.toString()), backgroundColor: AppTheme.error),
         );
       }
     }
@@ -106,7 +109,9 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
         ElevatedButton(
           onPressed: _loading ? null : _send,
           child: _loading
-              ? const SizedBox(height: 20, width: 20,
+              ? const SizedBox(
+                  height: 20,
+                  width: 20,
                   child: CircularProgressIndicator(
                       strokeWidth: 2, color: Colors.white))
               : const Text('Enviar enlace'),

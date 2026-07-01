@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
-import 'package:supabase_flutter/supabase_flutter.dart'
-    hide AuthException;
+import 'package:supabase_flutter/supabase_flutter.dart' hide AuthException;
 
 import 'core/config/env.dart';
 import 'core/router/app_router.dart';

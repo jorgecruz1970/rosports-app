@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart'
-    hide AuthException;
+import 'package:supabase_flutter/supabase_flutter.dart' hide AuthException;
 
 import '../../core/constants/app_constants.dart';
 import '../../data/models/user_model.dart';
@@ -30,8 +29,8 @@ class ProfileNotifier extends StateNotifier<ProfileState> {
       if (data == null) {
         final authUser = _client.auth.currentUser;
         if (authUser != null) {
-          state = AsyncValue.data(
-              UserModel.fromSupabaseUser(authUser).toEntity());
+          state =
+              AsyncValue.data(UserModel.fromSupabaseUser(authUser).toEntity());
         } else {
           state = const AsyncValue.error(
               'No se encontró el perfil', StackTrace.empty);
