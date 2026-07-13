@@ -133,10 +133,27 @@ class MatchRepositoryImpl implements MatchRepository {
       });
     }
 
-    // Incrementar spots_taken
-    await _supabase.rpc('increment_match_spots', params: {
-      'match_id_param': matchId,
-    });
+    // Incrementar spots_taken directamente
+    final countResult = await _supabase
+        .from(AppConstants.tableMatchSignups)
+        .select('id')
+        .eq('match_id', matchId)
+        .eq('status', 'signed');
+    
+    final newCount = (countResult as List).length;
+    await _supabase
+        .from(AppConstants.tableMatches)
+        .update({
+          'spots_taken': newCount,
+          'status': newCount >= (await _supabase
+              .from(AppConstants.tableMatches)
+              .select('spots_total')
+              .eq('id', matchId)
+              .single())['spots_total'] as int
+              ? 'full'
+              : 'open',
+        })
+        .eq('id', matchId);
   }
 
   @override
@@ -149,10 +166,21 @@ class MatchRepositoryImpl implements MatchRepository {
         .eq('match_id', matchId)
         .eq('user_id', userId);
 
-    // Decrementar spots_taken
-    await _supabase.rpc('decrement_match_spots', params: {
-      'match_id_param': matchId,
-    });
+    // Recalcular spots_taken
+    final countResult = await _supabase
+        .from(AppConstants.tableMatchSignups)
+        .select('id')
+        .eq('match_id', matchId)
+        .eq('status', 'signed');
+
+    final newCount = (countResult as List).length;
+    await _supabase
+        .from(AppConstants.tableMatches)
+        .update({
+          'spots_taken': newCount,
+          'status': 'open',
+        })
+        .eq('id', matchId);
   }
 
   @override

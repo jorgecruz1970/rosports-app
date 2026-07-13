@@ -15,15 +15,15 @@ final isSignedUpProvider =
   final userId = client.auth.currentUser?.id;
   if (userId == null) return false;
 
+  // Usar count para evitar ambigüedad con RLS que permite ver signups ajenos
   final data = await client
       .from(AppConstants.tableMatchSignups)
       .select('id')
       .eq('match_id', matchId)
       .eq('user_id', userId)
-      .eq('status', 'signed')
-      .maybeSingle();
+      .eq('status', 'signed');
 
-  return data != null;
+  return (data as List).isNotEmpty;
 });
 
 /// Provider para obtener la lista de jugadores inscritos
