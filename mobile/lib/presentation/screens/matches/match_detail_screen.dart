@@ -2,10 +2,29 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../domain/entities/match_entity.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/match_provider.dart';
+
+/// Provider que verifica si el usuario actual está inscrito en un partido
+final isSignedUpProvider =
+    FutureProvider.family<bool, String>((ref, matchId) async {
+  final client = ref.watch(supabaseClientProvider);
+  final userId = client.auth.currentUser?.id;
+  if (userId == null) return false;
+
+  final data = await client
+      .from(AppConstants.tableMatchSignups)
+      .select('id')
+      .eq('match_id', matchId)
+      .eq('user_id', userId)
+      .eq('status', 'signed')
+      .maybeSingle();
+
+  return data != null;
+});
 
 class MatchDetailScreen extends ConsumerWidget {
   const MatchDetailScreen({super.key, required this.matchId});
@@ -48,6 +67,7 @@ class _MatchDetailContent extends ConsumerWidget {
     final currentUserId =
         ref.read(supabaseClientProvider).auth.currentUser?.id;
     final isCreator = currentUserId == match.creatorUserId;
+    final isSignedUpAsync = ref.watch(isSignedUpProvider(match.id));
 
     ref.listen(matchNotifierProvider, (_, next) {
       next.whenOrNull(
@@ -55,6 +75,7 @@ class _MatchDetailContent extends ConsumerWidget {
           if (m != null) {
             ref.invalidate(matchDetailProvider(match.id));
             ref.invalidate(openMatchesProvider(null));
+            ref.invalidate(isSignedUpProvider(match.id));
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
                 content: Text('¡Listo!'),
@@ -103,7 +124,8 @@ class _MatchDetailContent extends ConsumerWidget {
             ),
             _InfoRow(
               icon: Icons.attach_money,
-              text: '\$${moneyFmt.format(match.pricePerPlayer)} COP por jugador',
+              text:
+                  '\$${moneyFmt.format(match.pricePerPlayer)} COP por jugador',
             ),
             _InfoRow(
               icon: Icons.people_outline,
@@ -136,7 +158,7 @@ class _MatchDetailContent extends ConsumerWidget {
                 fontWeight: FontWeight.w600,
               ),
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 24),
 
             // Status badge
             Container(
@@ -156,67 +178,171 @@ class _MatchDetailContent extends ConsumerWidget {
             ),
             const SizedBox(height: 32),
 
-            // Acciones
-            if (match.isOpen && !match.isFull && !isCreator)
-              ElevatedButton.icon(
-                onPressed: isActioning
-                    ? null
-                    : () => ref
-                        .read(matchNotifierProvider.notifier)
-                        .joinMatch(match.id),
-                icon: isActioning
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                            strokeWidth: 2, color: Colors.white),
-                      )
-                    : const Icon(Icons.sports_soccer),
-                label: Text(isActioning ? 'Uniendo...' : 'Unirse al partido'),
+            // Acciones según estado de inscripción
+            isSignedUpAsync.when(
+              loading: () => const Center(
+                child: CircularProgressIndicator(color: AppTheme.primary),
               ),
+              error: (_, __) => const SizedBox.shrink(),
+              data: (isSignedUp) {
+                if (!match.isOpen && !match.isFull) {
+                  return const SizedBox.shrink();
+                }
 
+                // Ya inscrito (no creador) → mostrar "Salir"
+                if (isSignedUp && !isCreator) {
+                  return Column(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.green.shade50,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.green.shade200),
+                        ),
+                        child: const Row(
+                          children: [
+                            Icon(Icons.check_circle,
+                                color: Colors.green, size: 20),
+                            SizedBox(width: 8),
+                            Text('Estás inscrito en este partido',
+                                style: TextStyle(
+                                    color: Colors.green,
+                                    fontWeight: FontWeight.w600)),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      OutlinedButton.icon(
+                        onPressed: isActioning
+                            ? null
+                            : () => _confirmLeave(context, ref),
+                        icon: const Icon(Icons.exit_to_app,
+                            color: Colors.orange),
+                        label: const Text('Salir del partido',
+                            style: TextStyle(color: Colors.orange)),
+                        style: OutlinedButton.styleFrom(
+                          minimumSize: const Size(double.infinity, 48),
+                          side: const BorderSide(color: Colors.orange),
+                        ),
+                      ),
+                    ],
+                  );
+                }
+
+                // No inscrito + hay espacio → mostrar "Unirse"
+                if (!isSignedUp && !isCreator && match.isOpen && !match.isFull) {
+                  return ElevatedButton.icon(
+                    onPressed: isActioning
+                        ? null
+                        : () => ref
+                            .read(matchNotifierProvider.notifier)
+                            .joinMatch(match.id),
+                    icon: isActioning
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                                strokeWidth: 2, color: Colors.white),
+                          )
+                        : const Icon(Icons.sports_soccer),
+                    label: Text(isActioning
+                        ? 'Uniendo...'
+                        : 'Unirse al partido — \$${moneyFmt.format(match.pricePerPlayer)} COP'),
+                  );
+                }
+
+                return const SizedBox.shrink();
+              },
+            ),
+
+            // Creador → puede cancelar
             if (isCreator && match.isOpen) ...[
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.blue.shade50,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(Icons.star, color: Colors.blue, size: 18),
+                    SizedBox(width: 8),
+                    Text('Tú creaste este partido',
+                        style: TextStyle(color: Colors.blue)),
+                  ],
+                ),
+              ),
               const SizedBox(height: 12),
               OutlinedButton.icon(
                 onPressed: isActioning
                     ? null
-                    : () async {
-                        final confirm = await showDialog<bool>(
-                          context: context,
-                          builder: (ctx) => AlertDialog(
-                            title: const Text('¿Cancelar partido?'),
-                            content: const Text(
-                                'Se notificará a todos los jugadores inscritos.'),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.pop(ctx, false),
-                                child: const Text('No'),
-                              ),
-                              TextButton(
-                                onPressed: () => Navigator.pop(ctx, true),
-                                child: const Text('Sí, cancelar',
-                                    style: TextStyle(color: AppTheme.error)),
-                              ),
-                            ],
-                          ),
-                        );
-                        if (confirm == true) {
-                          await ref
-                              .read(matchRepositoryProvider)
-                              .cancelMatch(match.id);
-                          ref.invalidate(matchDetailProvider(match.id));
-                          ref.invalidate(openMatchesProvider(null));
-                        }
-                      },
+                    : () => _confirmCancel(context, ref),
                 icon: const Icon(Icons.cancel_outlined, color: AppTheme.error),
                 label: const Text('Cancelar partido',
                     style: TextStyle(color: AppTheme.error)),
+                style: OutlinedButton.styleFrom(
+                  minimumSize: const Size(double.infinity, 48),
+                  side: const BorderSide(color: AppTheme.error),
+                ),
               ),
             ],
           ],
         ),
       ),
     );
+  }
+
+  Future<void> _confirmLeave(BuildContext context, WidgetRef ref) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('¿Salir del partido?'),
+        content: const Text('Tu plaza será liberada para otro jugador.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Sí, salir',
+                style: TextStyle(color: Colors.orange)),
+          ),
+        ],
+      ),
+    );
+    if (confirm == true) {
+      await ref.read(matchNotifierProvider.notifier).leaveMatch(match.id);
+    }
+  }
+
+  Future<void> _confirmCancel(BuildContext context, WidgetRef ref) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('¿Cancelar partido?'),
+        content: const Text(
+            'Se notificará a todos los jugadores inscritos.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('No'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Sí, cancelar',
+                style: TextStyle(color: AppTheme.error)),
+          ),
+        ],
+      ),
+    );
+    if (confirm == true) {
+      await ref.read(matchRepositoryProvider).cancelMatch(match.id);
+      ref.invalidate(matchDetailProvider(match.id));
+      ref.invalidate(openMatchesProvider(null));
+    }
   }
 
   String _levelLabel(String? level) {

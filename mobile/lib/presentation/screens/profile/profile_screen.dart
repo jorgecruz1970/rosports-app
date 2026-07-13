@@ -355,12 +355,12 @@ class _StatItem extends StatelessWidget {
   }
 }
 
-class _ReservationTile extends StatelessWidget {
+class _ReservationTile extends ConsumerWidget {
   const _ReservationTile({required this.reservation});
   final ReservationEntity reservation;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final dateFmt =
         DateFormat('EEE d MMM — HH:mm', 'es_CO');
     final moneyFmt = NumberFormat('#,###', 'es_CO');
@@ -384,6 +384,9 @@ class _ReservationTile extends StatelessWidget {
         statusColor = Colors.orange;
         statusLabel = 'Pendiente';
     }
+
+    final canCancel = reservation.status == ReservationStatus.pending ||
+        reservation.status == ReservationStatus.confirmed;
 
     return ListTile(
       leading: Container(
@@ -426,7 +429,57 @@ class _ReservationTile extends StatelessWidget {
           ),
         ],
       ),
+      onLongPress: canCancel
+          ? () => _showCancelDialog(context, ref)
+          : null,
     );
+  }
+
+  Future<void> _showCancelDialog(BuildContext context, WidgetRef ref) async {
+    final hoursUntil =
+        reservation.startTime.difference(DateTime.now()).inHours;
+    final isFree = hoursUntil >= 24;
+
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('¿Cancelar reserva?'),
+        content: Text(
+          isFree
+              ? 'Cancelación gratuita (faltan más de 24h).\n'
+                'El slot será liberado para otros jugadores.'
+              : '⚠️ Faltan menos de 24h — puede aplicar penalización '
+                'según la política de la cancha.\n'
+                '¿Deseas continuar?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('No'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Sí, cancelar',
+                style: TextStyle(color: AppTheme.error)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      await ref
+          .read(reservationNotifierProvider.notifier)
+          .cancelReservation(reservation.id);
+      ref.invalidate(myReservationsProvider);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Reserva cancelada. Slot liberado.'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    }
   }
 }
 

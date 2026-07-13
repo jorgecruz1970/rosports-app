@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_theme.dart';
@@ -41,6 +42,14 @@ class _CourtDetailContent extends ConsumerWidget {
   });
   final CourtEntity court;
   final AsyncValue<List<AvailabilitySlot>> slotsAsync;
+
+  Future<void> _openInMaps(double lat, double lng, String label) async {
+    final url = Uri.parse(
+        'https://www.google.com/maps/search/?api=1&query=$lat,$lng');
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url, mode: LaunchMode.externalApplication);
+    }
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -97,6 +106,54 @@ class _CourtDetailContent extends ConsumerWidget {
                             style: const TextStyle(color: Colors.grey)),
                       ),
                     ]),
+                  ],
+
+                  // Mini-mapa si hay coordenadas
+                  if (court.lat != null && court.lng != null) ...[
+                    const SizedBox(height: 12),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: Container(
+                        height: 150,
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade200,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Stack(
+                          children: [
+                            Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Icon(Icons.map_outlined,
+                                      size: 40, color: Colors.grey),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    '${court.lat!.toStringAsFixed(4)}, ${court.lng!.toStringAsFixed(4)}',
+                                    style: const TextStyle(
+                                        color: Colors.grey, fontSize: 12),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Positioned(
+                              bottom: 8,
+                              right: 8,
+                              child: ElevatedButton.icon(
+                                onPressed: () => _openInMaps(court.lat!, court.lng!, court.venueName),
+                                icon: const Icon(Icons.directions, size: 16),
+                                label: const Text('Cómo llegar', style: TextStyle(fontSize: 12)),
+                                style: ElevatedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                  minimumSize: Size.zero,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                   ],
                   const SizedBox(height: 16),
 
