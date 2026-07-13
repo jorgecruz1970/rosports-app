@@ -1,6 +1,5 @@
 import 'package:equatable/equatable.dart';
 
-/// Entidad de dominio — Cancha
 class CourtEntity extends Equatable {
   const CourtEntity({
     required this.id,
@@ -9,6 +8,7 @@ class CourtEntity extends Equatable {
     required this.sportId,
     required this.sportName,
     required this.pricePerHour,
+    this.name,
     this.surfaceType,
     this.hasLights = false,
     this.photoUrls = const [],
@@ -23,12 +23,15 @@ class CourtEntity extends Equatable {
   final String sportId;
   final String sportName;
   final double pricePerHour;
+  final String? name;
   final String? surfaceType;
   final bool hasLights;
   final List<String> photoUrls;
   final String? address;
   final double? lat;
   final double? lng;
+
+  String get displayName => name ?? '$sportName — $venueName';
 
   @override
   List<Object?> get props => [id, venueId, sportId, pricePerHour];

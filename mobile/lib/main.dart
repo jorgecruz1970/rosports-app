@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide AuthException;
 
 import 'core/config/env.dart';
@@ -8,6 +9,9 @@ import 'core/theme/app_theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Inicializar locale español para DateFormat
+  await initializeDateFormatting('es_CO', null);
 
   // Inicializar Supabase
   await Supabase.initialize(
@@ -18,9 +22,6 @@ Future<void> main() async {
       authFlowType: AuthFlowType.pkce,
     ),
   );
-
-  // TODO: Reactivar Sentry cuando se actualice a versión compatible con Kotlin 2.0
-  // await SentryFlutter.init(...)
 
   runApp(
     const ProviderScope(
