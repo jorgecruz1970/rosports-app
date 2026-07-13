@@ -32,6 +32,7 @@ dependencies:
 
   # Pagos (WebView para redirect PayU)
   webview_flutter: ^4.7.0
+  crypto: ^3.0.3
 
   # Imágenes
   cached_network_image: ^3.3.1

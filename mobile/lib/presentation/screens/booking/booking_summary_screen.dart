@@ -3,10 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
+import '../../../core/config/env.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../providers/auth_provider.dart';
 import '../../providers/court_provider.dart';
+import '../../providers/payment_provider.dart';
+import '../../providers/profile_provider.dart';
 import '../../providers/reservation_provider.dart';
 
 class BookingSummaryScreen extends ConsumerWidget {
@@ -31,22 +35,27 @@ class BookingSummaryScreen extends ConsumerWidget {
     final timeFmt = DateFormat('HH:mm');
     final moneyFmt = NumberFormat('#,###', 'es_CO');
 
-    // Navegar a confirmación cuando la reserva se crea exitosamente
+    // Manejar errores de reserva
     ref.listen(reservationNotifierProvider, (_, next) {
       next.whenOrNull(
-        data: (reservation) {
-          if (reservation != null) {
-            // Invalidar cache de disponibilidad para que al volver muestre el slot como booked
-            ref.invalidate(courtAvailabilityStreamProvider(court!.id));
-            ref.invalidate(myReservationsProvider);
-            ref.read(reservationNotifierProvider.notifier).reset();
-            context.go(AppRoutes.bookingConfirm);
-          }
-        },
         error: (e, _) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Error al crear reserva: $e'),
+              backgroundColor: AppTheme.error,
+            ),
+          );
+        },
+      );
+    });
+
+    // Manejar errores de pago
+    ref.listen(paymentNotifierProvider, (_, next) {
+      next.whenOrNull(
+        error: (e, _) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error al iniciar pago: $e'),
               backgroundColor: AppTheme.error,
             ),
           );
@@ -168,12 +177,13 @@ class BookingSummaryScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 16),
 
-            // Botón reservar — sin pago por ahora (Sprint 2)
+            // Botón reservar + pago
             ElevatedButton.icon(
               onPressed: reservationState.isLoading
                   ? null
                   : () async {
-                      await ref
+                      // 1. Crear la reserva en estado pending (bloquea el slot)
+                      final reservation = await ref
                           .read(reservationNotifierProvider.notifier)
                           .createReservation(
                             courtId: court.id,
@@ -182,6 +192,51 @@ class BookingSummaryScreen extends ConsumerWidget {
                             endTime: slot.endTime,
                             pricePerHour: court.pricePerHour,
                           );
+
+                      if (reservation == null || !context.mounted) return;
+
+                      // Invalidar cache de disponibilidad para que el slot aparezca como ocupado
+                      ref.invalidate(courtAvailabilityStreamProvider(court.id));
+                      ref.invalidate(myReservationsProvider);
+
+                      // En sandbox (sin credenciales PayU), ir directo a confirmación
+                      if (Env.payuApiKey.isEmpty || Env.isSandbox) {
+                        ref.read(reservationNotifierProvider.notifier).reset();
+                        context.go(AppRoutes.bookingConfirm);
+                        return;
+                      }
+
+                      // 2. En producción: iniciar pago con PayU
+                      final profile = ref.read(profileProvider).valueOrNull;
+                      final email = profile?.email ??
+                          ref.read(supabaseClientProvider).auth.currentUser?.email ?? '';
+                      final name = profile?.name ?? 'Usuario';
+
+                      final payResult = await ref
+                          .read(paymentNotifierProvider.notifier)
+                          .initiatePayment(
+                            reservationId: reservation.id,
+                            amount: total,
+                            currency: 'COP',
+                            description:
+                                '${court.displayName} - ${timeFmt.format(slot.startTime)}',
+                            buyerEmail: email,
+                            buyerName: name,
+                          );
+
+                      if (!context.mounted) return;
+
+                      if (payResult != null) {
+                        // Abrir WebView de PayU
+                        context.push(AppRoutes.paymentWebview, extra: {
+                          'checkoutUrl': payResult.redirectUrl,
+                          'paymentId': payResult.paymentId,
+                        });
+                      } else {
+                        // Si el pago falla, ir a confirmación igual
+                        ref.read(reservationNotifierProvider.notifier).reset();
+                        context.go(AppRoutes.bookingConfirm);
+                      }
                     },
               icon: reservationState.isLoading
                   ? const SizedBox(
@@ -192,15 +247,16 @@ class BookingSummaryScreen extends ConsumerWidget {
                     )
                   : const Icon(Icons.check_circle_outline),
               label: Text(reservationState.isLoading
-                  ? 'Creando reserva...'
-                  : 'Confirmar reserva'),
+                  ? 'Procesando...'
+                  : 'Confirmar reserva — \$${moneyFmt.format(total)} COP'),
             ),
             const SizedBox(height: 8),
             Center(
               child: Text(
-                'El pago se integrará en el Sprint 3 (PayU)',
-                style: TextStyle(
-                    fontSize: 11, color: Colors.grey.shade500),
+                Env.payuApiKey.isEmpty
+                    ? 'El pago online se habilitará próximamente'
+                    : 'Pago seguro procesado por PayU',
+                style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
               ),
             ),
           ],

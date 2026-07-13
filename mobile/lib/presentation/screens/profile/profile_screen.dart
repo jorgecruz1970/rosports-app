@@ -99,6 +99,49 @@ class _ProfileContent extends ConsumerWidget {
     }
   }
 
+  void _showAllReservations(
+      BuildContext context, List<ReservationEntity> reservations) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => DraggableScrollableSheet(
+        initialChildSize: 0.7,
+        maxChildSize: 0.9,
+        minChildSize: 0.4,
+        expand: false,
+        builder: (_, scrollCtrl) => Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  const Text('Mis reservas',
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  const Spacer(),
+                  Text('${reservations.length} total',
+                      style: const TextStyle(color: Colors.grey)),
+                ],
+              ),
+            ),
+            const Divider(height: 1),
+            Expanded(
+              child: ListView.builder(
+                controller: scrollCtrl,
+                itemCount: reservations.length,
+                itemBuilder: (_, i) =>
+                    _ReservationTile(reservation: reservations[i]),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final reservationsAsync = ref.watch(myReservationsProvider);
@@ -245,7 +288,7 @@ class _ProfileContent extends ConsumerWidget {
                       .map((r) => _ReservationTile(reservation: r)),
                   if (reservations.length > 3)
                     TextButton(
-                      onPressed: () {},
+                      onPressed: () => _showAllReservations(context, reservations),
                       child: Text(
                           'Ver todas (${reservations.length})',
                           style: const TextStyle(
@@ -261,17 +304,17 @@ class _ProfileContent extends ConsumerWidget {
           _ProfileOption(
             icon: Icons.edit_outlined,
             label: 'Editar perfil',
-            onTap: () {},
+            onTap: () => context.push(AppRoutes.editProfile),
           ),
           _ProfileOption(
             icon: Icons.sports_soccer_outlined,
             label: 'Mis partidos',
-            onTap: () {},
+            onTap: () => context.push(AppRoutes.myMatches),
           ),
           _ProfileOption(
             icon: Icons.notifications_outlined,
             label: 'Notificaciones',
-            onTap: () {},
+            onTap: () => context.push(AppRoutes.notifications),
           ),
           _ProfileOption(
             icon: Icons.privacy_tip_outlined,

@@ -12,8 +12,14 @@ import '../../presentation/screens/booking/booking_summary_screen.dart';
 import '../../presentation/screens/courts/court_detail_screen.dart';
 import '../../presentation/screens/courts/courts_screen.dart';
 import '../../presentation/screens/home_screen.dart';
+import '../../presentation/screens/matches/create_match_screen.dart';
 import '../../presentation/screens/matches/match_detail_screen.dart';
 import '../../presentation/screens/matches/matches_screen.dart';
+import '../../presentation/screens/notifications/notifications_screen.dart';
+import '../../presentation/screens/payment/payment_result_screen.dart';
+import '../../presentation/screens/payment/payment_webview_screen.dart';
+import '../../presentation/screens/profile/edit_profile_screen.dart';
+import '../../presentation/screens/profile/my_matches_screen.dart';
 import '../../presentation/screens/profile/profile_screen.dart';
 import '../../presentation/screens/splash_screen.dart';
 
@@ -31,7 +37,13 @@ abstract class AppRoutes {
   static const bookingConfirm = '/booking/confirmation';
   static const matches = '/matches';
   static const matchDetail = '/matches/:id';
+  static const createMatch = '/matches/create';
+  static const paymentWebview = '/payment/webview';
+  static const paymentResult = '/payment/result';
   static const profile = '/profile';
+  static const editProfile = '/profile/edit';
+  static const myMatches = '/profile/matches';
+  static const notifications = '/notifications';
   static const admin = '/admin';
 }
 
@@ -77,11 +89,40 @@ GoRouter appRouter(AppRouterRef ref) {
       GoRoute(
           path: AppRoutes.matches, builder: (c, s) => const MatchesScreen()),
       GoRoute(
+        path: AppRoutes.createMatch,
+        builder: (c, s) => const CreateMatchScreen(),
+      ),
+      GoRoute(
         path: AppRoutes.matchDetail,
         builder: (c, s) => MatchDetailScreen(matchId: s.pathParameters['id']!),
       ),
       GoRoute(
+        path: AppRoutes.paymentWebview,
+        builder: (c, s) {
+          final extra = s.extra as Map<String, String>;
+          return PaymentWebViewScreen(
+            checkoutUrl: extra['checkoutUrl']!,
+            paymentId: extra['paymentId']!,
+          );
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.paymentResult,
+        builder: (c, s) => PaymentResultScreen(
+          paymentId: s.uri.queryParameters['paymentId'] ?? '',
+        ),
+      ),
+      GoRoute(
           path: AppRoutes.profile, builder: (c, s) => const ProfileScreen()),
+      GoRoute(
+          path: AppRoutes.editProfile,
+          builder: (c, s) => const EditProfileScreen()),
+      GoRoute(
+          path: AppRoutes.myMatches,
+          builder: (c, s) => const MyMatchesScreen()),
+      GoRoute(
+          path: AppRoutes.notifications,
+          builder: (c, s) => const NotificationsScreen()),
       GoRoute(
           path: AppRoutes.admin,
           builder: (c, s) => const AdminDashboardScreen()),
