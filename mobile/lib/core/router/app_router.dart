@@ -12,8 +12,11 @@ import '../../presentation/screens/booking/booking_summary_screen.dart';
 import '../../presentation/screens/courts/court_detail_screen.dart';
 import '../../presentation/screens/courts/courts_screen.dart';
 import '../../presentation/screens/home_screen.dart';
+import '../../presentation/screens/matches/create_match_screen.dart';
 import '../../presentation/screens/matches/match_detail_screen.dart';
 import '../../presentation/screens/matches/matches_screen.dart';
+import '../../presentation/screens/payment/payment_result_screen.dart';
+import '../../presentation/screens/payment/payment_webview_screen.dart';
 import '../../presentation/screens/profile/profile_screen.dart';
 import '../../presentation/screens/splash_screen.dart';
 
@@ -31,6 +34,9 @@ abstract class AppRoutes {
   static const bookingConfirm = '/booking/confirmation';
   static const matches = '/matches';
   static const matchDetail = '/matches/:id';
+  static const createMatch = '/matches/create';
+  static const paymentWebview = '/payment/webview';
+  static const paymentResult = '/payment/result';
   static const profile = '/profile';
   static const admin = '/admin';
 }
@@ -79,6 +85,26 @@ GoRouter appRouter(AppRouterRef ref) {
       GoRoute(
         path: AppRoutes.matchDetail,
         builder: (c, s) => MatchDetailScreen(matchId: s.pathParameters['id']!),
+      ),
+      GoRoute(
+        path: AppRoutes.createMatch,
+        builder: (c, s) => const CreateMatchScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.paymentWebview,
+        builder: (c, s) {
+          final extra = s.extra as Map<String, String>;
+          return PaymentWebViewScreen(
+            checkoutUrl: extra['checkoutUrl']!,
+            paymentId: extra['paymentId']!,
+          );
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.paymentResult,
+        builder: (c, s) => PaymentResultScreen(
+          paymentId: s.uri.queryParameters['paymentId'] ?? '',
+        ),
       ),
       GoRoute(
           path: AppRoutes.profile, builder: (c, s) => const ProfileScreen()),
