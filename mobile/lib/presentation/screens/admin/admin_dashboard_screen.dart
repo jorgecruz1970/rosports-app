@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/constants/app_constants.dart';
+import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../providers/auth_provider.dart';
 
@@ -203,6 +205,34 @@ class AdminDashboardScreen extends ConsumerWidget {
                       status: status,
                     );
                   }),
+                const SizedBox(height: 28),
+                const Text('Gestión de canchas',
+                    style:
+                        TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 12),
+                OutlinedButton.icon(
+                  onPressed: () => context.push(AppRoutes.adminSlots, extra: {
+                    'courtId': '44444444-0000-0000-0000-000000000001',
+                    'courtName': 'Cancha 1 - Fútbol 5',
+                  }),
+                  icon: const Icon(Icons.calendar_view_day),
+                  label: const Text('Gestionar slots — Cancha 1'),
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: const Size(double.infinity, 48),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                OutlinedButton.icon(
+                  onPressed: () => context.push(AppRoutes.adminSlots, extra: {
+                    'courtId': '44444444-0000-0000-0000-000000000002',
+                    'courtName': 'Cancha 2 - Fútbol 7',
+                  }),
+                  icon: const Icon(Icons.calendar_view_day),
+                  label: const Text('Gestionar slots — Cancha 2'),
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: const Size(double.infinity, 48),
+                  ),
+                ),
               ],
             ),
           ),
