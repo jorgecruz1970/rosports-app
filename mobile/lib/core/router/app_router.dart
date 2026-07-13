@@ -83,12 +83,12 @@ GoRouter appRouter(AppRouterRef ref) {
       GoRoute(
           path: AppRoutes.matches, builder: (c, s) => const MatchesScreen()),
       GoRoute(
-        path: AppRoutes.matchDetail,
-        builder: (c, s) => MatchDetailScreen(matchId: s.pathParameters['id']!),
-      ),
-      GoRoute(
         path: AppRoutes.createMatch,
         builder: (c, s) => const CreateMatchScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.matchDetail,
+        builder: (c, s) => MatchDetailScreen(matchId: s.pathParameters['id']!),
       ),
       GoRoute(
         path: AppRoutes.paymentWebview,

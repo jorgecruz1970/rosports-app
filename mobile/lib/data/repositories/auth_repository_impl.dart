@@ -59,12 +59,14 @@ class AuthRepositoryImpl implements AuthRepository {
     required String password,
   }) async {
     try {
+      print('[AUTH] Attempting login with email: $email');
       final response = await _supabase.auth.signInWithPassword(
         email: email,
         password: password,
       );
 
       final user = response.user;
+      print('[AUTH] Login response user: ${user?.id}');
       if (user == null)
         throw const RoAuthException('No se pudo iniciar sesión.');
 
@@ -72,6 +74,7 @@ class AuthRepositoryImpl implements AuthRepository {
     } on RoAuthException {
       rethrow;
     } catch (e) {
+      print('[AUTH] Login error: $e');
       final code = _extractCode(e);
       throw RoAuthException(mapAuthError(code), code: code);
     }
@@ -82,17 +85,22 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<UserEntity> loginWithGoogle() async {
     try {
+      print('[AUTH] Starting Google OAuth...');
       await _supabase.auth.signInWithOAuth(
         OAuthProvider.google,
         redirectTo: 'app.rosports.mobile://login-callback',
       );
+      // OAuth abre el navegador — el usuario se autentica allí
+      // Al volver, onAuthStateChange detecta la sesión
       final user = _supabase.auth.currentUser;
+      print('[AUTH] Google OAuth user: ${user?.id}');
       if (user == null)
         throw const RoAuthException('Login con Google cancelado.');
       return await _getOrCreateProfile(user);
     } on RoAuthException {
       rethrow;
     } catch (e) {
+      print('[AUTH] Google error: $e');
       throw RoAuthException('Error con Google: $e');
     }
   }
