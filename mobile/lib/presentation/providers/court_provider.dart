@@ -19,10 +19,16 @@ class CourtFilters {
   final String? cityId;
   final DateTime? date;
 
-  CourtFilters copyWith({String? sportId, String? cityId, DateTime? date}) =>
+  CourtFilters copyWith({
+    String? sportId,
+    String? cityId,
+    DateTime? date,
+    bool clearSport = false,
+    bool clearCity = false,
+  }) =>
       CourtFilters(
-        sportId: sportId ?? this.sportId,
-        cityId: cityId ?? this.cityId,
+        sportId: clearSport ? null : (sportId ?? this.sportId),
+        cityId: clearCity ? null : (cityId ?? this.cityId),
         date: date ?? this.date,
       );
 }

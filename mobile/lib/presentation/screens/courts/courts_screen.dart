@@ -163,9 +163,13 @@ class _SportFilterChips extends ConsumerWidget {
             child: FilterChip(
               label: Text(s['name'] as String),
               selected: isSelected,
-              onSelected: (_) => ref
-                  .read(courtFiltersProvider.notifier)
-                  .update((f) => f.copyWith(sportId: s['id'])),
+              onSelected: (_) {
+                final id = s['id'] as String?;
+                ref.read(courtFiltersProvider.notifier).update(
+                    (f) => id == null
+                        ? f.copyWith(clearSport: true)
+                        : f.copyWith(sportId: id));
+              },
               selectedColor: AppTheme.primary.withOpacity(0.15),
               checkmarkColor: AppTheme.primary,
               labelStyle: TextStyle(
