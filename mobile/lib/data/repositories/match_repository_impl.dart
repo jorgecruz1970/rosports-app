@@ -107,12 +107,31 @@ class MatchRepositoryImpl implements MatchRepository {
   Future<void> joinMatch(String matchId) async {
     final userId = _supabase.auth.currentUser!.id;
 
-    // Inscribir
-    await _supabase.from(AppConstants.tableMatchSignups).insert({
-      'match_id': matchId,
-      'user_id': userId,
-      'status': 'signed',
-    });
+    // Verificar si ya está inscrito
+    final existing = await _supabase
+        .from(AppConstants.tableMatchSignups)
+        .select('id, status')
+        .eq('match_id', matchId)
+        .eq('user_id', userId)
+        .maybeSingle();
+
+    if (existing != null) {
+      if (existing['status'] == 'signed') {
+        throw Exception('Ya estás inscrito en este partido');
+      }
+      // Si estaba cancelado, re-inscribir
+      await _supabase
+          .from(AppConstants.tableMatchSignups)
+          .update({'status': 'signed'})
+          .eq('id', existing['id']);
+    } else {
+      // Inscribir nuevo
+      await _supabase.from(AppConstants.tableMatchSignups).insert({
+        'match_id': matchId,
+        'user_id': userId,
+        'status': 'signed',
+      });
+    }
 
     // Incrementar spots_taken
     await _supabase.rpc('increment_match_spots', params: {

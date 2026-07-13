@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../core/constants/app_constants.dart';
 import '../../core/router/app_router.dart';
 import '../../core/theme/app_theme.dart';
 
@@ -24,6 +26,15 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
     // Espera mínima para mostrar splash
     await Future.delayed(const Duration(milliseconds: 1500));
     if (!mounted) return;
+
+    // Verificar si es primera vez (onboarding)
+    final prefs = await SharedPreferences.getInstance();
+    final onboardingDone = prefs.getBool(AppConstants.prefOnboardingDone) ?? false;
+
+    if (!onboardingDone) {
+      context.go(AppRoutes.onboarding);
+      return;
+    }
 
     final session = Supabase.instance.client.auth.currentSession;
     context.go(session != null ? AppRoutes.home : AppRoutes.login);
