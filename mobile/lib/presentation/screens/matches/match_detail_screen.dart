@@ -26,6 +26,24 @@ final isSignedUpProvider =
   return data != null;
 });
 
+/// Provider para obtener la lista de jugadores inscritos
+final matchPlayersProvider =
+    FutureProvider.family<List<Map<String, dynamic>>, String>((ref, matchId) async {
+  final client = ref.watch(supabaseClientProvider);
+
+  final data = await client
+      .from(AppConstants.tableMatchSignups)
+      .select('''
+        id, user_id, status, created_at,
+        profiles:user_id(name, level, avatar_url)
+      ''')
+      .eq('match_id', matchId)
+      .eq('status', 'signed')
+      .order('created_at');
+
+  return List<Map<String, dynamic>>.from(data);
+});
+
 class MatchDetailScreen extends ConsumerWidget {
   const MatchDetailScreen({super.key, required this.matchId});
   final String matchId;
@@ -176,7 +194,14 @@ class _MatchDetailContent extends ConsumerWidget {
                 ),
               ),
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 24),
+
+            // Jugadores inscritos
+            const Text('Jugadores inscritos',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+            _PlayersSection(matchId: match.id),
+            const SizedBox(height: 24),
 
             // Acciones según estado de inscripción
             isSignedUpAsync.when(
@@ -400,5 +425,91 @@ class _InfoRow extends StatelessWidget {
         Expanded(child: Text(text)),
       ]),
     );
+  }
+}
+
+
+class _PlayersSection extends ConsumerWidget {
+  const _PlayersSection({required this.matchId});
+  final String matchId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final playersAsync = ref.watch(matchPlayersProvider(matchId));
+
+    return playersAsync.when(
+      loading: () => const Padding(
+        padding: EdgeInsets.all(12),
+        child: Center(
+          child: CircularProgressIndicator(color: AppTheme.primary, strokeWidth: 2),
+        ),
+      ),
+      error: (_, __) => const Text('Error cargando jugadores'),
+      data: (players) {
+        if (players.isEmpty) {
+          return const Padding(
+            padding: EdgeInsets.all(8),
+            child: Text('Aún no hay jugadores inscritos',
+                style: TextStyle(color: Colors.grey)),
+          );
+        }
+
+        return Column(
+          children: players.map((p) {
+            final profile = p['profiles'] as Map<String, dynamic>? ?? {};
+            final name = profile['name'] as String? ?? 'Jugador';
+            final level = profile['level'] as String?;
+            final avatarUrl = profile['avatar_url'] as String?;
+
+            return ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: CircleAvatar(
+                radius: 20,
+                backgroundColor: AppTheme.primary.withOpacity(0.2),
+                backgroundImage:
+                    avatarUrl != null ? NetworkImage(avatarUrl) : null,
+                child: avatarUrl == null
+                    ? Text(
+                        name.isNotEmpty ? name[0].toUpperCase() : '?',
+                        style: const TextStyle(
+                            color: AppTheme.primary,
+                            fontWeight: FontWeight.bold),
+                      )
+                    : null,
+              ),
+              title: Text(name, style: const TextStyle(fontSize: 14)),
+              trailing: level != null
+                  ? Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade100,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        _levelLabel(level),
+                        style: TextStyle(
+                            fontSize: 11, color: Colors.grey.shade600),
+                      ),
+                    )
+                  : null,
+            );
+          }).toList(),
+        );
+      },
+    );
+  }
+
+  String _levelLabel(String level) {
+    switch (level) {
+      case 'beginner':
+        return 'Principiante';
+      case 'intermediate':
+        return 'Intermedio';
+      case 'advanced':
+        return 'Avanzado';
+      default:
+        return level;
+    }
   }
 }
