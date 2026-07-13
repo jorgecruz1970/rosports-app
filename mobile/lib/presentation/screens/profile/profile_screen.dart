@@ -304,17 +304,17 @@ class _ProfileContent extends ConsumerWidget {
           _ProfileOption(
             icon: Icons.edit_outlined,
             label: 'Editar perfil',
-            onTap: () {},
+            onTap: () => context.push(AppRoutes.editProfile),
           ),
           _ProfileOption(
             icon: Icons.sports_soccer_outlined,
             label: 'Mis partidos',
-            onTap: () {},
+            onTap: () => context.push(AppRoutes.myMatches),
           ),
           _ProfileOption(
             icon: Icons.notifications_outlined,
             label: 'Notificaciones',
-            onTap: () {},
+            onTap: () => context.push(AppRoutes.notifications),
           ),
           _ProfileOption(
             icon: Icons.privacy_tip_outlined,
