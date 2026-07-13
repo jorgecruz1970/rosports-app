@@ -317,6 +317,11 @@ class _ProfileContent extends ConsumerWidget {
             onTap: () => context.push(AppRoutes.notifications),
           ),
           _ProfileOption(
+            icon: Icons.payment_outlined,
+            label: 'Historial de pagos',
+            onTap: () => context.push(AppRoutes.paymentHistory),
+          ),
+          _ProfileOption(
             icon: Icons.privacy_tip_outlined,
             label: 'Política de privacidad',
             onTap: () => ScaffoldMessenger.of(context).showSnackBar(

@@ -20,6 +20,7 @@ import '../../presentation/screens/payment/payment_result_screen.dart';
 import '../../presentation/screens/payment/payment_webview_screen.dart';
 import '../../presentation/screens/profile/edit_profile_screen.dart';
 import '../../presentation/screens/profile/my_matches_screen.dart';
+import '../../presentation/screens/profile/payment_history_screen.dart';
 import '../../presentation/screens/profile/profile_screen.dart';
 import '../../presentation/screens/splash_screen.dart';
 
@@ -43,6 +44,7 @@ abstract class AppRoutes {
   static const profile = '/profile';
   static const editProfile = '/profile/edit';
   static const myMatches = '/profile/matches';
+  static const paymentHistory = '/profile/payments';
   static const notifications = '/notifications';
   static const admin = '/admin';
 }
@@ -120,6 +122,9 @@ GoRouter appRouter(AppRouterRef ref) {
       GoRoute(
           path: AppRoutes.myMatches,
           builder: (c, s) => const MyMatchesScreen()),
+      GoRoute(
+          path: AppRoutes.paymentHistory,
+          builder: (c, s) => const PaymentHistoryScreen()),
       GoRoute(
           path: AppRoutes.notifications,
           builder: (c, s) => const NotificationsScreen()),
