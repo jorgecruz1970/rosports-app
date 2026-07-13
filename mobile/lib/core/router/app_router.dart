@@ -4,6 +4,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../presentation/screens/admin/admin_dashboard_screen.dart';
+import '../../presentation/screens/admin/manage_slots_screen.dart';
 import '../../presentation/screens/auth/forgot_password_screen.dart';
 import '../../presentation/screens/auth/login_screen.dart';
 import '../../presentation/screens/auth/register_screen.dart';
@@ -16,6 +17,7 @@ import '../../presentation/screens/matches/create_match_screen.dart';
 import '../../presentation/screens/matches/match_detail_screen.dart';
 import '../../presentation/screens/matches/matches_screen.dart';
 import '../../presentation/screens/notifications/notifications_screen.dart';
+import '../../presentation/screens/onboarding/onboarding_screen.dart';
 import '../../presentation/screens/payment/payment_result_screen.dart';
 import '../../presentation/screens/payment/payment_webview_screen.dart';
 import '../../presentation/screens/profile/edit_profile_screen.dart';
@@ -28,6 +30,7 @@ part 'app_router.g.dart';
 
 abstract class AppRoutes {
   static const splash = '/';
+  static const onboarding = '/onboarding';
   static const login = '/login';
   static const register = '/register';
   static const forgotPassword = '/forgot-password';
@@ -47,6 +50,7 @@ abstract class AppRoutes {
   static const paymentHistory = '/profile/payments';
   static const notifications = '/notifications';
   static const admin = '/admin';
+  static const adminSlots = '/admin/slots';
 }
 
 @riverpod
@@ -70,6 +74,9 @@ GoRouter appRouter(AppRouterRef ref) {
     },
     routes: [
       GoRoute(path: AppRoutes.splash, builder: (c, s) => const SplashScreen()),
+      GoRoute(
+          path: AppRoutes.onboarding,
+          builder: (c, s) => const OnboardingScreen()),
       GoRoute(path: AppRoutes.login, builder: (c, s) => const LoginScreen()),
       GoRoute(
           path: AppRoutes.register, builder: (c, s) => const RegisterScreen()),
@@ -131,6 +138,16 @@ GoRouter appRouter(AppRouterRef ref) {
       GoRoute(
           path: AppRoutes.admin,
           builder: (c, s) => const AdminDashboardScreen()),
+      GoRoute(
+        path: AppRoutes.adminSlots,
+        builder: (c, s) {
+          final extra = s.extra as Map<String, String>;
+          return ManageSlotsScreen(
+            courtId: extra['courtId']!,
+            courtName: extra['courtName']!,
+          );
+        },
+      ),
     ],
     errorBuilder: (context, state) => Scaffold(
       body: Center(child: Text('Ruta no encontrada: ${state.uri}')),

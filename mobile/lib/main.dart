@@ -6,6 +6,7 @@ import 'package:supabase_flutter/supabase_flutter.dart' hide AuthException;
 import 'core/config/env.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
+import 'data/services/push_notification_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,6 +23,15 @@ Future<void> main() async {
       authFlowType: AuthFlowType.pkce,
     ),
   );
+
+  // Inicializar FCM (si hay sesión activa)
+  if (Supabase.instance.client.auth.currentSession != null) {
+    try {
+      await PushNotificationService.initialize();
+    } catch (_) {
+      // FCM puede fallar en emulador sin Google Services
+    }
+  }
 
   runApp(
     const ProviderScope(
