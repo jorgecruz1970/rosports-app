@@ -8,6 +8,7 @@ abstract class ReservationRepository {
     required String slotId,
     required DateTime startTime,
     required DateTime endTime,
+    required double pricePerHour,
   });
 
   /// Obtener reservas del usuario autenticado

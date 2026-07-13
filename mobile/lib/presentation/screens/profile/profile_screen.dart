@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../domain/entities/reservation_entity.dart';
 import '../../../domain/entities/user_entity.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/profile_provider.dart';
+import '../../providers/reservation_provider.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -20,20 +23,23 @@ class ProfileScreen extends ConsumerWidget {
         title: const Text('Mi perfil'),
         actions: [
           IconButton(
-              icon: const Icon(Icons.settings_outlined), onPressed: () {}),
+            icon: const Icon(Icons.settings_outlined),
+            onPressed: () {},
+          ),
         ],
       ),
       body: profileState.when(
         loading: () => const Center(
           child: CircularProgressIndicator(color: AppTheme.primary),
         ),
-        error: (error, _) => Center(
+        error: (e, _) => Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.error_outline, size: 48, color: Colors.grey),
+              const Icon(Icons.error_outline,
+                  size: 48, color: Colors.grey),
               const SizedBox(height: 16),
-              Text(error.toString(),
+              Text(e.toString(),
                   textAlign: TextAlign.center,
                   style: const TextStyle(color: Colors.grey)),
               const SizedBox(height: 24),
@@ -68,7 +74,8 @@ class _ProfileContent extends ConsumerWidget {
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Salir', style: TextStyle(color: AppTheme.error)),
+            child: const Text('Salir',
+                style: TextStyle(color: AppTheme.error)),
           ),
         ],
       ),
@@ -94,13 +101,16 @@ class _ProfileContent extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final reservationsAsync = ref.watch(myReservationsProvider);
+
     return SingleChildScrollView(
       child: Column(
         children: [
           // Header
           Container(
             color: AppTheme.secondary,
-            padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 20),
+            padding: const EdgeInsets.symmetric(
+                vertical: 32, horizontal: 20),
             child: Row(
               children: [
                 CircleAvatar(
@@ -110,7 +120,8 @@ class _ProfileContent extends ConsumerWidget {
                       ? NetworkImage(user.avatarUrl!)
                       : null,
                   child: user.avatarUrl == null
-                      ? const Icon(Icons.person, color: Colors.white, size: 40)
+                      ? const Icon(Icons.person,
+                          color: Colors.white, size: 40)
                       : null,
                 ),
                 const SizedBox(width: 16),
@@ -118,74 +129,143 @@ class _ProfileContent extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(user.name.isEmpty ? 'Usuario' : user.name,
-                          style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold)),
+                      Text(
+                        user.name.isEmpty ? 'Usuario' : user.name,
+                        style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold),
+                      ),
                       const SizedBox(height: 4),
-                      Text(_levelLabel(user.level),
-                          style: const TextStyle(color: Colors.white70)),
+                      Text(
+                        _levelLabel(user.level),
+                        style: const TextStyle(color: Colors.white70),
+                      ),
                     ],
                   ),
                 ),
                 Column(
                   children: [
-                    Text(user.points.toString(),
-                        style: const TextStyle(
-                            color: AppTheme.primary,
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold)),
-                    Text('pts',
-                        style: TextStyle(
-                            color: Colors.white.withOpacity(0.7),
-                            fontSize: 12)),
+                    Text(
+                      user.points.toString(),
+                      style: const TextStyle(
+                          color: AppTheme.primary,
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      'pts',
+                      style: TextStyle(
+                          color: Colors.white.withOpacity(0.7),
+                          fontSize: 12),
+                    ),
                   ],
                 ),
               ],
             ),
           ),
+
           // Email
           Container(
             color: Colors.grey.shade100,
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            padding:
+                const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
             child: Row(
               children: [
-                const Icon(Icons.email_outlined, color: Colors.grey, size: 16),
+                const Icon(Icons.email_outlined,
+                    color: Colors.grey, size: 16),
                 const SizedBox(width: 8),
                 Text(user.email,
-                    style: const TextStyle(color: Colors.grey, fontSize: 13)),
+                    style: const TextStyle(
+                        color: Colors.grey, fontSize: 13)),
               ],
             ),
           ),
           const SizedBox(height: 8),
+
           // Stats
-          Container(
-            color: Colors.grey.shade50,
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            child: const Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _StatItem(value: '—', label: 'Partidos'),
-                _StatItem(value: '—', label: 'Reservas'),
-                _StatItem(value: '0', label: 'Tarjetas'),
-              ],
+          reservationsAsync.when(
+            loading: () => Container(
+              color: Colors.grey.shade50,
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  _StatItem(value: '...', label: 'Reservas'),
+                  _StatItem(value: '0', label: 'Tarjetas'),
+                  _StatItem(value: '0', label: 'Partidos'),
+                ],
+              ),
             ),
+            error: (_, __) => const SizedBox.shrink(),
+            data: (reservations) {
+              final confirmed = reservations
+                  .where((r) =>
+                      r.status == ReservationStatus.confirmed ||
+                      r.status == ReservationStatus.completed)
+                  .length;
+              return Container(
+                color: Colors.grey.shade50,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    _StatItem(
+                        value: reservations.length.toString(),
+                        label: 'Reservas'),
+                    _StatItem(
+                        value: confirmed.toString(),
+                        label: 'Confirmadas'),
+                    const _StatItem(value: '0', label: 'Tarjetas'),
+                  ],
+                ),
+              );
+            },
           ),
           const SizedBox(height: 8),
+
+          // Mis reservas expandidas
+          reservationsAsync.when(
+            loading: () => const SizedBox.shrink(),
+            error: (_, __) => const SizedBox.shrink(),
+            data: (reservations) {
+              if (reservations.isEmpty) return const SizedBox.shrink();
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Padding(
+                    padding: EdgeInsets.fromLTRB(16, 8, 16, 8),
+                    child: Text('Mis reservas',
+                        style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold)),
+                  ),
+                  ...reservations
+                      .take(3)
+                      .map((r) => _ReservationTile(reservation: r)),
+                  if (reservations.length > 3)
+                    TextButton(
+                      onPressed: () {},
+                      child: Text(
+                          'Ver todas (${reservations.length})',
+                          style: const TextStyle(
+                              color: AppTheme.primary)),
+                    ),
+                  const SizedBox(height: 8),
+                ],
+              );
+            },
+          ),
+
+          // Opciones
           _ProfileOption(
-            icon: Icons.calendar_today_outlined,
-            label: 'Mis reservas',
+            icon: Icons.edit_outlined,
+            label: 'Editar perfil',
             onTap: () {},
           ),
           _ProfileOption(
             icon: Icons.sports_soccer_outlined,
             label: 'Mis partidos',
-            onTap: () {},
-          ),
-          _ProfileOption(
-            icon: Icons.edit_outlined,
-            label: 'Editar perfil',
             onTap: () {},
           ),
           _ProfileOption(
@@ -199,14 +279,6 @@ class _ProfileContent extends ConsumerWidget {
             onTap: () => ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
                   content: Text('Próximamente: rosports.app/privacidad')),
-            ),
-          ),
-          _ProfileOption(
-            icon: Icons.help_outline,
-            label: 'Ayuda y soporte',
-            onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                  content: Text('Próximamente: soporte@rosports.app')),
             ),
           ),
           const Divider(),
@@ -231,9 +303,86 @@ class _StatItem extends StatelessWidget {
     return Column(
       children: [
         Text(value,
-            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-        Text(label, style: const TextStyle(color: Colors.grey, fontSize: 13)),
+            style: const TextStyle(
+                fontSize: 22, fontWeight: FontWeight.bold)),
+        Text(label,
+            style: const TextStyle(color: Colors.grey, fontSize: 13)),
       ],
+    );
+  }
+}
+
+class _ReservationTile extends StatelessWidget {
+  const _ReservationTile({required this.reservation});
+  final ReservationEntity reservation;
+
+  @override
+  Widget build(BuildContext context) {
+    final dateFmt =
+        DateFormat('EEE d MMM — HH:mm', 'es_CO');
+    final moneyFmt = NumberFormat('#,###', 'es_CO');
+
+    Color statusColor;
+    String statusLabel;
+    switch (reservation.status) {
+      case ReservationStatus.confirmed:
+        statusColor = Colors.green;
+        statusLabel = 'Confirmada';
+        break;
+      case ReservationStatus.cancelled:
+        statusColor = Colors.red;
+        statusLabel = 'Cancelada';
+        break;
+      case ReservationStatus.completed:
+        statusColor = Colors.blue;
+        statusLabel = 'Completada';
+        break;
+      default:
+        statusColor = Colors.orange;
+        statusLabel = 'Pendiente';
+    }
+
+    return ListTile(
+      leading: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color: AppTheme.primary.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: const Icon(Icons.sports_soccer,
+            color: AppTheme.primary, size: 20),
+      ),
+      title: Text(reservation.courtName,
+          style: const TextStyle(fontWeight: FontWeight.w600)),
+      subtitle:
+          Text(dateFmt.format(reservation.startTime)),
+      trailing: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Container(
+            padding:
+                const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+            decoration: BoxDecoration(
+              color: statusColor.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Text(
+              statusLabel,
+              style: TextStyle(
+                  fontSize: 10,
+                  color: statusColor,
+                  fontWeight: FontWeight.bold),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            '\$${moneyFmt.format(reservation.totalAmount)}',
+            style: const TextStyle(fontSize: 12, color: Colors.grey),
+          ),
+        ],
+      ),
     );
   }
 }

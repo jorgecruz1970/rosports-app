@@ -1,72 +1,138 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 
 import '../../../core/theme/app_theme.dart';
+import '../../../domain/entities/court_entity.dart';
+import '../../providers/court_provider.dart';
 
-class CourtsScreen extends StatelessWidget {
+class CourtsScreen extends ConsumerStatefulWidget {
   const CourtsScreen({super.key});
 
   @override
+  ConsumerState<CourtsScreen> createState() => _CourtsScreenState();
+}
+
+class _CourtsScreenState extends ConsumerState<CourtsScreen> {
+  final _searchCtrl = TextEditingController();
+  String _searchQuery = '';
+
+  @override
+  void dispose() {
+    _searchCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final filters = ref.watch(courtFiltersProvider);
+    final courtsAsync = ref.watch(courtsProvider(filters));
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Canchas disponibles'),
-        actions: [
-          IconButton(icon: const Icon(Icons.filter_list), onPressed: () {}),
-        ],
-      ),
+      appBar: AppBar(title: const Text('Canchas disponibles')),
       body: Column(
         children: [
-          // Barra de búsqueda
+          // Búsqueda
           Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
             child: TextField(
+              controller: _searchCtrl,
+              onChanged: (v) => setState(() => _searchQuery = v.toLowerCase()),
               decoration: InputDecoration(
                 hintText: 'Buscar cancha...',
                 prefixIcon: const Icon(Icons.search),
+                suffixIcon: _searchQuery.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.clear),
+                        onPressed: () {
+                          _searchCtrl.clear();
+                          setState(() => _searchQuery = '');
+                        },
+                      )
+                    : null,
+                filled: true,
+                fillColor: Colors.grey.shade100,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide.none,
                 ),
-                filled: true,
-                fillColor: Colors.grey.shade100,
               ),
             ),
           ),
           // Chips de deporte
-          SizedBox(
-            height: 48,
-            child: ListView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              children: ['Todos', 'Fútbol 5', 'Fútbol 7', 'Pádel', 'Baloncesto']
-                  .map((sport) => Padding(
-                        padding: const EdgeInsets.only(right: 8),
-                        child: FilterChip(
-                          label: Text(sport),
-                          selected: sport == 'Todos',
-                          onSelected: (_) {},
-                          selectedColor: AppTheme.primary.withOpacity(0.2),
-                          checkmarkColor: AppTheme.primary,
-                        ),
-                      ))
-                  .toList(),
-            ),
-          ),
-          const SizedBox(height: 8),
-          // Lista de canchas
+          _SportFilterChips(),
+          const SizedBox(height: 4),
+          // Lista
           Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemCount: 5, // TODO: reemplazar con datos reales de Supabase
-              itemBuilder: (context, index) => _CourtCard(
-                id: 'court-$index',
-                name: 'Cancha ${index + 1} - Fútbol 5',
-                venue: 'Complejo Deportivo Norte',
-                price: 120000,
-                sport: 'Fútbol 5',
-                onTap: () => context.push('/courts/court-$index'),
+            child: courtsAsync.when(
+              loading: () => const Center(
+                child: CircularProgressIndicator(color: AppTheme.primary),
               ),
+              error: (e, _) => Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.error_outline,
+                        size: 48, color: Colors.grey),
+                    const SizedBox(height: 12),
+                    Text('Error al cargar canchas',
+                        style: TextStyle(color: Colors.grey.shade600)),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: () =>
+                          ref.invalidate(courtsProvider(filters)),
+                      child: const Text('Reintentar'),
+                    ),
+                  ],
+                ),
+              ),
+              data: (courts) {
+                final filtered = _searchQuery.isEmpty
+                    ? courts
+                    : courts
+                        .where((c) =>
+                            c.displayName
+                                .toLowerCase()
+                                .contains(_searchQuery) ||
+                            c.venueName
+                                .toLowerCase()
+                                .contains(_searchQuery) ||
+                            c.sportName
+                                .toLowerCase()
+                                .contains(_searchQuery))
+                        .toList();
+
+                if (filtered.isEmpty) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.sports_soccer_outlined,
+                            size: 64,
+                            color: Colors.grey.shade300),
+                        const SizedBox(height: 16),
+                        Text('No hay canchas disponibles',
+                            style: TextStyle(color: Colors.grey.shade500)),
+                      ],
+                    ),
+                  );
+                }
+
+                return RefreshIndicator(
+                  color: AppTheme.primary,
+                  onRefresh: () async =>
+                      ref.invalidate(courtsProvider(filters)),
+                  child: ListView.builder(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: filtered.length,
+                    itemBuilder: (_, i) => _CourtCard(
+                      court: filtered[i],
+                      onTap: () => context.push('/courts/${filtered[i].id}'),
+                    ),
+                  ),
+                );
+              },
             ),
           ),
         ],
@@ -75,25 +141,55 @@ class CourtsScreen extends StatelessWidget {
   }
 }
 
-class _CourtCard extends StatelessWidget {
-  const _CourtCard({
-    required this.id,
-    required this.name,
-    required this.venue,
-    required this.price,
-    required this.sport,
-    required this.onTap,
-  });
+class _SportFilterChips extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final filters = ref.watch(courtFiltersProvider);
+    final sports = [
+      {'id': null, 'name': 'Todos'},
+      {'id': '22222222-0000-0000-0000-000000000001', 'name': 'Fútbol 5'},
+      {'id': '22222222-0000-0000-0000-000000000002', 'name': 'Fútbol 7'},
+    ];
 
-  final String id;
-  final String name;
-  final String venue;
-  final double price;
-  final String sport;
+    return SizedBox(
+      height: 48,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        children: sports.map((s) {
+          final isSelected = filters.sportId == s['id'];
+          return Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: FilterChip(
+              label: Text(s['name'] as String),
+              selected: isSelected,
+              onSelected: (_) => ref
+                  .read(courtFiltersProvider.notifier)
+                  .update((f) => f.copyWith(sportId: s['id'] as String?)),
+              selectedColor: AppTheme.primary.withOpacity(0.15),
+              checkmarkColor: AppTheme.primary,
+              labelStyle: TextStyle(
+                color: isSelected ? AppTheme.primary : Colors.black87,
+                fontWeight: isSelected
+                    ? FontWeight.bold
+                    : FontWeight.normal,
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+}
+
+class _CourtCard extends StatelessWidget {
+  const _CourtCard({required this.court, required this.onTap});
+  final CourtEntity court;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
+    final fmt = NumberFormat('#,###', 'es_CO');
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: InkWell(
@@ -118,38 +214,42 @@ class _CourtCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(name,
+                    Text(court.displayName,
                         style: const TextStyle(
                             fontWeight: FontWeight.bold, fontSize: 15)),
                     const SizedBox(height: 4),
-                    Text(venue,
+                    Text(court.venueName,
                         style: TextStyle(
                             color: Colors.grey.shade600, fontSize: 13)),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 3),
-                          decoration: BoxDecoration(
-                            color: AppTheme.primary.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(8),
+                    if (court.address != null) ...[
+                      const SizedBox(height: 2),
+                      Row(children: [
+                        Icon(Icons.location_on_outlined,
+                            size: 12, color: Colors.grey.shade500),
+                        const SizedBox(width: 2),
+                        Expanded(
+                          child: Text(
+                            court.address!,
+                            style: TextStyle(
+                                color: Colors.grey.shade500, fontSize: 11),
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          child: Text(sport,
-                              style: const TextStyle(
-                                  color: AppTheme.primary,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600)),
                         ),
-                        const Spacer(),
-                        Text(
-                          '\$${price.toStringAsFixed(0)} COP/h',
-                          style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: AppTheme.primary),
-                        ),
-                      ],
-                    ),
+                      ]),
+                    ],
+                    const SizedBox(height: 8),
+                    Row(children: [
+                      _Chip(label: court.sportName),
+                      const SizedBox(width: 6),
+                      if (court.hasLights) _Chip(label: 'Con luz'),
+                      const Spacer(),
+                      Text(
+                        '\$${fmt.format(court.pricePerHour)} / h',
+                        style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: AppTheme.primary),
+                      ),
+                    ]),
                   ],
                 ),
               ),
@@ -158,6 +258,27 @@ class _CourtCard extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _Chip extends StatelessWidget {
+  const _Chip({required this.label});
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: AppTheme.primary.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text(label,
+          style: const TextStyle(
+              color: AppTheme.primary,
+              fontSize: 11,
+              fontWeight: FontWeight.w600)),
     );
   }
 }

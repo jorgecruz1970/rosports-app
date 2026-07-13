@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sentry_flutter/sentry_flutter.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide AuthException;
 
 import 'core/config/env.dart';
@@ -10,27 +10,22 @@ import 'core/theme/app_theme.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Inicializar locale español para DateFormat
+  await initializeDateFormatting('es_CO', null);
+
   // Inicializar Supabase
   await Supabase.initialize(
     url: Env.supabaseUrl,
     // ignore: deprecated_member_use
     anonKey: Env.supabaseAnonKey,
     authOptions: const FlutterAuthClientOptions(
-      authFlowType: AuthFlowType.pkce, // más seguro para móvil
+      authFlowType: AuthFlowType.pkce,
     ),
   );
 
-  // Inicializar Sentry (monitoreo de errores)
-  await SentryFlutter.init(
-    (options) {
-      options.dsn = Env.sentryDsn;
-      options.tracesSampleRate = 0.2;
-      options.environment = Env.environment;
-    },
-    appRunner: () => runApp(
-      const ProviderScope(
-        child: ROSportsApp(),
-      ),
+  runApp(
+    const ProviderScope(
+      child: ROSportsApp(),
     ),
   );
 }
