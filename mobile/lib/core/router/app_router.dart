@@ -4,7 +4,11 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../presentation/screens/admin/admin_dashboard_screen.dart';
+import '../../presentation/screens/admin/create_court_screen.dart';
+import '../../presentation/screens/admin/create_venue_screen.dart';
+import '../../presentation/screens/admin/generate_slots_screen.dart';
 import '../../presentation/screens/admin/manage_slots_screen.dart';
+import '../../presentation/screens/admin/my_venues_screen.dart';
 import '../../presentation/screens/auth/forgot_password_screen.dart';
 import '../../presentation/screens/auth/login_screen.dart';
 import '../../presentation/screens/auth/register_screen.dart';
@@ -51,6 +55,10 @@ abstract class AppRoutes {
   static const notifications = '/notifications';
   static const admin = '/admin';
   static const adminSlots = '/admin/slots';
+  static const adminVenues = '/admin/venues';
+  static const adminCreateVenue = '/admin/venues/create';
+  static const adminCreateCourt = '/admin/courts/create';
+  static const adminGenerateSlots = '/admin/slots/generate';
 }
 
 @riverpod
@@ -155,6 +163,30 @@ GoRouter appRouter(AppRouterRef ref) {
             courtId: extra['courtId']!,
             courtName: extra['courtName']!,
           );
+        },
+      ),
+      GoRoute(
+          path: AppRoutes.adminVenues,
+          builder: (c, s) => const MyVenuesScreen()),
+      GoRoute(
+          path: AppRoutes.adminCreateVenue,
+          builder: (c, s) => const CreateVenueScreen()),
+      GoRoute(
+        path: AppRoutes.adminCreateCourt,
+        builder: (c, s) {
+          final extra = s.extra as Map<String, String>;
+          return CreateCourtScreen(
+            venueId: extra['venueId']!,
+            venueName: extra['venueName']!,
+          );
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.adminGenerateSlots,
+        builder: (c, s) {
+          final extra = s.extra as Map<String, dynamic>;
+          final courts = extra['courts'] as List<dynamic>;
+          return GenerateSlotsScreen(courts: courts.cast<Map<String, dynamic>>());
         },
       ),
     ],

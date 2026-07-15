@@ -210,6 +210,12 @@ class AdminDashboardScreen extends ConsumerWidget {
                     style:
                         TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 12),
+                ElevatedButton.icon(
+                  onPressed: () => context.push(AppRoutes.adminVenues),
+                  icon: const Icon(Icons.business),
+                  label: const Text('Mis sedes y canchas'),
+                ),
+                const SizedBox(height: 12),
                 OutlinedButton.icon(
                   onPressed: () => context.push(AppRoutes.adminSlots, extra: {
                     'courtId': '44444444-0000-0000-0000-000000000001',
