@@ -141,17 +141,19 @@ class MatchRepositoryImpl implements MatchRepository {
         .eq('status', 'signed');
     
     final newCount = (countResult as List).length;
+    
+    final matchData = await _supabase
+        .from(AppConstants.tableMatches)
+        .select('spots_total')
+        .eq('id', matchId)
+        .single();
+    final spotsTotal = matchData['spots_total'] as int;
+
     await _supabase
         .from(AppConstants.tableMatches)
         .update({
           'spots_taken': newCount,
-          'status': newCount >= (await _supabase
-              .from(AppConstants.tableMatches)
-              .select('spots_total')
-              .eq('id', matchId)
-              .single())['spots_total'] as int
-              ? 'full'
-              : 'open',
+          'status': newCount >= spotsTotal ? 'full' : 'open',
         })
         .eq('id', matchId);
   }
