@@ -135,6 +135,7 @@ class _GenerateSlotsScreenState extends ConsumerState<GenerateSlotsScreen> {
         );
       }
     } catch (e) {
+      debugPrint('[SLOTS] Error generating: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error: $e'), backgroundColor: AppTheme.error),
