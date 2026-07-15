@@ -86,16 +86,18 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<UserEntity> loginWithGoogle() async {
     try {
       print('[AUTH] Starting Google OAuth...');
-      await _supabase.auth.signInWithOAuth(
+      final success = await _supabase.auth.signInWithOAuth(
         OAuthProvider.google,
         redirectTo: 'app.rosports.mobile://login-callback',
       );
-      // OAuth abre el navegador — el usuario se autentica allí
-      // Al volver, onAuthStateChange detecta la sesión
-      final user = _supabase.auth.currentUser;
-      print('[AUTH] Google OAuth user: ${user?.id}');
-      if (user == null)
-        throw const RoAuthException('Login con Google cancelado.');
+      print('[AUTH] OAuth launched: $success');
+      
+      // signInWithOAuth abre el navegador — el flujo continúa vía deep link.
+      // Esperamos a que onAuthStateChange detecte la sesión (máx 60s).
+      final user = await _waitForAuthUser(timeout: const Duration(seconds: 60));
+      if (user == null) {
+        throw const RoAuthException('Login con Google cancelado o expirado.');
+      }
       return await _getOrCreateProfile(user);
     } on RoAuthException {
       rethrow;
@@ -114,14 +116,36 @@ class AuthRepositoryImpl implements AuthRepository {
         OAuthProvider.apple,
         redirectTo: 'app.rosports.mobile://login-callback',
       );
-      final user = _supabase.auth.currentUser;
-      if (user == null)
-        throw const RoAuthException('Login con Apple cancelado.');
+      
+      final user = await _waitForAuthUser(timeout: const Duration(seconds: 60));
+      if (user == null) {
+        throw const RoAuthException('Login con Apple cancelado o expirado.');
+      }
       return await _getOrCreateProfile(user);
     } on RoAuthException {
       rethrow;
     } catch (e) {
       throw RoAuthException('Error con Apple: $e');
+    }
+  }
+
+  /// Espera a que el usuario se autentique vía OAuth (deep link callback)
+  Future<User?> _waitForAuthUser({required Duration timeout}) async {
+    // Si ya hay usuario (raro pero posible), retornar inmediatamente
+    if (_supabase.auth.currentUser != null) {
+      return _supabase.auth.currentUser;
+    }
+
+    // Escuchar cambios de auth hasta obtener un signedIn
+    try {
+      final event = await _supabase.auth.onAuthStateChange
+          .where((e) => e.event == AuthChangeEvent.signedIn)
+          .first
+          .timeout(timeout);
+      return event.session?.user;
+    } catch (_) {
+      // Timeout o error — usuario canceló o no volvió
+      return null;
     }
   }
 
