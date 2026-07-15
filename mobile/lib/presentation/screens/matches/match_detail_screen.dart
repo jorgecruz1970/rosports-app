@@ -11,7 +11,7 @@ import '../../providers/match_provider.dart';
 /// Provider que verifica si el usuario actual está inscrito en un partido.
 /// Usa un approach defensivo: consulta directa con user_id explícito.
 final isSignedUpProvider =
-    FutureProvider.family<bool, String>((ref, matchId) async {
+    FutureProvider.autoDispose.family<bool, String>((ref, matchId) async {
   final client = ref.watch(supabaseClientProvider);
   final userId = client.auth.currentUser?.id;
   if (userId == null) return false;
@@ -23,7 +23,6 @@ final isSignedUpProvider =
         .eq('match_id', matchId)
         .eq('status', 'signed');
 
-    // Filtrar manualmente por userId (por si RLS devuelve signups ajenos al creador)
     final mySignups = (data as List)
         .where((row) => row['user_id'] == userId)
         .toList();
@@ -36,7 +35,7 @@ final isSignedUpProvider =
 
 /// Provider para obtener la lista de jugadores inscritos
 final matchPlayersProvider =
-    FutureProvider.family<List<Map<String, dynamic>>, String>((ref, matchId) async {
+    FutureProvider.autoDispose.family<List<Map<String, dynamic>>, String>((ref, matchId) async {
   final client = ref.watch(supabaseClientProvider);
 
   try {
@@ -52,7 +51,6 @@ final matchPlayersProvider =
 
     return List<Map<String, dynamic>>.from(data);
   } catch (_) {
-    // Si RLS no permite ver, retornar vacío
     return [];
   }
 });
