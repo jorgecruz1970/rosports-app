@@ -183,10 +183,12 @@ class MyVenuesScreen extends ConsumerWidget {
                                   context.push(
                                     AppRoutes.adminGenerateSlots,
                                     extra: {
-                                      'courtId': courts.first['id'] as String,
-                                      'courtName':
-                                          courts.first['name'] as String? ??
-                                              'Cancha',
+                                      'courts': courts
+                                          .map((c) => {
+                                                'id': c['id'] as String,
+                                                'name': c['name'] as String? ?? 'Cancha',
+                                              })
+                                          .toList(),
                                     },
                                   );
                                 },

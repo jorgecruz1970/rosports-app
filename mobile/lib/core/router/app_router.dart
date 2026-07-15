@@ -184,11 +184,9 @@ GoRouter appRouter(AppRouterRef ref) {
       GoRoute(
         path: AppRoutes.adminGenerateSlots,
         builder: (c, s) {
-          final extra = s.extra as Map<String, String>;
-          return GenerateSlotsScreen(
-            courtId: extra['courtId']!,
-            courtName: extra['courtName']!,
-          );
+          final extra = s.extra as Map<String, dynamic>;
+          final courts = extra['courts'] as List<dynamic>;
+          return GenerateSlotsScreen(courts: courts.cast<Map<String, dynamic>>());
         },
       ),
     ],

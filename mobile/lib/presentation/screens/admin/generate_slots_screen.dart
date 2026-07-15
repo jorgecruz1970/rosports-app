@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/constants/app_constants.dart';
@@ -8,27 +7,34 @@ import '../../../core/theme/app_theme.dart';
 import '../../providers/auth_provider.dart';
 
 /// Pantalla para generar slots de disponibilidad masivamente.
-/// El admin selecciona cancha, rango de fechas y horarios, y se generan slots.
 class GenerateSlotsScreen extends ConsumerStatefulWidget {
-  const GenerateSlotsScreen({super.key, required this.courtId, required this.courtName});
-  final String courtId;
-  final String courtName;
+  const GenerateSlotsScreen({super.key, required this.courts});
+  final List<Map<String, dynamic>> courts;
 
   @override
   ConsumerState<GenerateSlotsScreen> createState() => _GenerateSlotsScreenState();
 }
 
 class _GenerateSlotsScreenState extends ConsumerState<GenerateSlotsScreen> {
+  late String _selectedCourtId;
+  late String _selectedCourtName;
   DateTime _startDate = DateTime.now();
   DateTime _endDate = DateTime.now().add(const Duration(days: 14));
   TimeOfDay _startTime = const TimeOfDay(hour: 6, minute: 0);
   TimeOfDay _endTime = const TimeOfDay(hour: 22, minute: 0);
   int _slotDurationMinutes = 60;
-  List<bool> _selectedDays = [true, true, true, true, true, true, true]; // L-D
+  List<bool> _selectedDays = [true, true, true, true, true, true, true];
   bool _isGenerating = false;
   int _generatedCount = 0;
 
   final _dayNames = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedCourtId = widget.courts.first['id'] as String;
+    _selectedCourtName = widget.courts.first['name'] as String;
+  }
 
   Future<void> _pickDateRange() async {
     final range = await showDateRangePicker(
@@ -52,11 +58,8 @@ class _GenerateSlotsScreenState extends ConsumerState<GenerateSlotsScreen> {
     );
     if (time != null) {
       setState(() {
-        if (isStart) {
-          _startTime = time;
-        } else {
-          _endTime = time;
-        }
+        if (isStart) _startTime = time;
+        else _endTime = time;
       });
     }
   }
@@ -71,33 +74,24 @@ class _GenerateSlotsScreenState extends ConsumerState<GenerateSlotsScreen> {
       final client = ref.read(supabaseClientProvider);
       final slots = <Map<String, dynamic>>[];
 
-      // Iterar por cada día en el rango
       var currentDate = _startDate;
       while (!currentDate.isAfter(_endDate)) {
-        // Verificar si este día de la semana está seleccionado
-        final weekday = currentDate.weekday; // 1=Mon, 7=Sun
+        final weekday = currentDate.weekday;
         if (_selectedDays[weekday - 1]) {
-          // Generar slots para este día
           var slotStart = DateTime(
-            currentDate.year,
-            currentDate.month,
-            currentDate.day,
-            _startTime.hour,
-            _startTime.minute,
+            currentDate.year, currentDate.month, currentDate.day,
+            _startTime.hour, _startTime.minute,
           );
           final dayEnd = DateTime(
-            currentDate.year,
-            currentDate.month,
-            currentDate.day,
-            _endTime.hour,
-            _endTime.minute,
+            currentDate.year, currentDate.month, currentDate.day,
+            _endTime.hour, _endTime.minute,
           );
 
           while (slotStart.add(Duration(minutes: _slotDurationMinutes)).isBefore(dayEnd) ||
               slotStart.add(Duration(minutes: _slotDurationMinutes)).isAtSameMomentAs(dayEnd)) {
             final slotEnd = slotStart.add(Duration(minutes: _slotDurationMinutes));
             slots.add({
-              'court_id': widget.courtId,
+              'court_id': _selectedCourtId,
               'start_time': slotStart.toUtc().toIso8601String(),
               'end_time': slotEnd.toUtc().toIso8601String(),
               'status': 'available',
@@ -111,18 +105,18 @@ class _GenerateSlotsScreenState extends ConsumerState<GenerateSlotsScreen> {
       if (slots.isEmpty) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('No se generaron slots con la configuración actual')),
+            const SnackBar(content: Text('No se generaron slots con esta configuración')),
           );
         }
         setState(() => _isGenerating = false);
         return;
       }
 
-      // Verificar duplicados: obtener slots existentes en el rango
+      // Evitar duplicados
       final existingSlots = await client
           .from(AppConstants.tableSlots)
           .select('start_time')
-          .eq('court_id', widget.courtId)
+          .eq('court_id', _selectedCourtId)
           .gte('start_time', _startDate.toUtc().toIso8601String())
           .lte('start_time', _endDate.add(const Duration(days: 1)).toUtc().toIso8601String());
 
@@ -130,7 +124,6 @@ class _GenerateSlotsScreenState extends ConsumerState<GenerateSlotsScreen> {
           .map((s) => s['start_time'] as String)
           .toSet();
 
-      // Filtrar slots que ya existen
       final newSlots = slots
           .where((s) => !existingTimes.contains(s['start_time']))
           .toList();
@@ -145,7 +138,6 @@ class _GenerateSlotsScreenState extends ConsumerState<GenerateSlotsScreen> {
         return;
       }
 
-      // Insertar en lotes de 50
       for (var i = 0; i < newSlots.length; i += 50) {
         final batch = newSlots.sublist(i, i + 50 > newSlots.length ? newSlots.length : i + 50);
         await client.from(AppConstants.tableSlots).insert(batch);
@@ -154,15 +146,17 @@ class _GenerateSlotsScreenState extends ConsumerState<GenerateSlotsScreen> {
       setState(() => _generatedCount = newSlots.length);
 
       if (mounted) {
+        final omitted = slots.length - newSlots.length;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('¡${newSlots.length} slots generados! (${slots.length - newSlots.length} duplicados omitidos)'),
+            content: Text('¡${newSlots.length} slots generados!'
+                '${omitted > 0 ? ' ($omitted duplicados omitidos)' : ''}'),
             backgroundColor: Colors.green,
           ),
         );
       }
     } catch (e) {
-      debugPrint('[SLOTS] Error generating: $e');
+      debugPrint('[SLOTS] Error: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error: $e'), backgroundColor: AppTheme.error),
@@ -176,11 +170,11 @@ class _GenerateSlotsScreenState extends ConsumerState<GenerateSlotsScreen> {
   @override
   Widget build(BuildContext context) {
     final dateFmt = DateFormat('d MMM', 'es_CO');
-    final totalDays = _endDate.difference(_startDate).inDays + 1;
-    final selectedDaysCount = _selectedDays.where((d) => d).length;
     final slotsPerDay =
         ((_endTime.hour * 60 + _endTime.minute) - (_startTime.hour * 60 + _startTime.minute)) ~/
             _slotDurationMinutes;
+    final totalDays = _endDate.difference(_startDate).inDays + 1;
+    final selectedDaysCount = _selectedDays.where((d) => d).length;
     final estimatedSlots = (totalDays * selectedDaysCount / 7 * slotsPerDay).round();
 
     return Scaffold(
@@ -190,23 +184,33 @@ class _GenerateSlotsScreenState extends ConsumerState<GenerateSlotsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Cancha info
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: AppTheme.primary.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
+            // Selector de cancha
+            const Text('Cancha',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+            const SizedBox(height: 8),
+            DropdownButtonFormField<String>(
+              value: _selectedCourtId,
+              decoration: const InputDecoration(
+                prefixIcon: Icon(Icons.sports_soccer),
+                border: OutlineInputBorder(),
               ),
-              child: Row(
-                children: [
-                  const Icon(Icons.sports_soccer, color: AppTheme.primary),
-                  const SizedBox(width: 12),
-                  Text(widget.courtName,
-                      style: const TextStyle(fontWeight: FontWeight.bold)),
-                ],
-              ),
+              items: widget.courts.map((c) {
+                return DropdownMenuItem(
+                  value: c['id'] as String,
+                  child: Text(c['name'] as String),
+                );
+              }).toList(),
+              onChanged: (v) {
+                if (v == null) return;
+                final court = widget.courts.firstWhere((c) => c['id'] == v);
+                setState(() {
+                  _selectedCourtId = v;
+                  _selectedCourtName = court['name'] as String;
+                  _generatedCount = 0;
+                });
+              },
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 20),
 
             // Rango de fechas
             const Text('Rango de fechas',
@@ -216,13 +220,11 @@ class _GenerateSlotsScreenState extends ConsumerState<GenerateSlotsScreen> {
               onPressed: _pickDateRange,
               icon: const Icon(Icons.date_range),
               label: Text('${dateFmt.format(_startDate)} — ${dateFmt.format(_endDate)}'),
-              style: OutlinedButton.styleFrom(
-                minimumSize: const Size(double.infinity, 48),
-              ),
+              style: OutlinedButton.styleFrom(minimumSize: const Size(double.infinity, 48)),
             ),
             const SizedBox(height: 20),
 
-            // Días de la semana
+            // Días
             const Text('Días de la semana',
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
             const SizedBox(height: 8),
@@ -263,8 +265,8 @@ class _GenerateSlotsScreenState extends ConsumerState<GenerateSlotsScreen> {
             ),
             const SizedBox(height: 20),
 
-            // Duración del slot
-            const Text('Duración de cada slot',
+            // Duración
+            const Text('Duración del slot',
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
             const SizedBox(height: 8),
             SegmentedButton<int>(
@@ -274,8 +276,7 @@ class _GenerateSlotsScreenState extends ConsumerState<GenerateSlotsScreen> {
                 ButtonSegment(value: 120, label: Text('2h')),
               ],
               selected: {_slotDurationMinutes},
-              onSelectionChanged: (v) =>
-                  setState(() => _slotDurationMinutes = v.first),
+              onSelectionChanged: (v) => setState(() => _slotDurationMinutes = v.first),
             ),
             const SizedBox(height: 24),
 
@@ -292,9 +293,7 @@ class _GenerateSlotsScreenState extends ConsumerState<GenerateSlotsScreen> {
                   const Text('Slots estimados:'),
                   Text('~$estimatedSlots',
                       style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18,
-                          color: AppTheme.primary)),
+                          fontWeight: FontWeight.bold, fontSize: 18, color: AppTheme.primary)),
                 ],
               ),
             ),
@@ -313,25 +312,20 @@ class _GenerateSlotsScreenState extends ConsumerState<GenerateSlotsScreen> {
                   children: [
                     const Icon(Icons.check_circle, color: Colors.green),
                     const SizedBox(width: 8),
-                    Text('$_generatedCount slots generados',
+                    Text('$_generatedCount slots generados para $_selectedCourtName',
                         style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
                   ],
                 ),
               ),
 
-            // Botón generar
+            // Botón
             ElevatedButton.icon(
-              onPressed: (_isGenerating || _generatedCount > 0) ? null : _generate,
+              onPressed: _isGenerating ? null : _generate,
               icon: _isGenerating
-                  ? const SizedBox(
-                      width: 20, height: 20,
+                  ? const SizedBox(width: 20, height: 20,
                       child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                  : Icon(_generatedCount > 0 ? Icons.check : Icons.auto_awesome),
-              label: Text(_isGenerating
-                  ? 'Generando...'
-                  : _generatedCount > 0
-                      ? 'Slots generados ✓'
-                      : 'Generar slots'),
+                  : const Icon(Icons.auto_awesome),
+              label: Text(_isGenerating ? 'Generando...' : 'Generar slots'),
             ),
           ],
         ),

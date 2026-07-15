@@ -6,14 +6,13 @@ import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../domain/repositories/court_repository.dart';
 import '../../providers/auth_provider.dart';
-import '../../providers/court_provider.dart';
 
-/// Provider de todos los slots de una cancha (incluyendo bloqueados)
-final adminSlotsProvider = FutureProvider.family<List<AvailabilitySlot>, String>(
-    (ref, courtId) async {
+/// Provider de todos los slots de una cancha
+final adminSlotsProvider = FutureProvider.autoDispose
+    .family<List<AvailabilitySlot>, String>((ref, courtId) async {
   final client = ref.watch(supabaseClientProvider);
   final now = DateTime.now();
-  final end = now.add(const Duration(days: 14));
+  final end = now.add(const Duration(days: 30));
 
   final data = await client
       .from(AppConstants.tableSlots)
@@ -55,41 +54,33 @@ class ManageSlotsScreen extends ConsumerStatefulWidget {
 }
 
 class _ManageSlotsScreenState extends ConsumerState<ManageSlotsScreen> {
+  DateTime? _selectedDate;
   bool _isProcessing = false;
 
   Future<void> _toggleSlot(AvailabilitySlot slot) async {
     if (slot.status == SlotStatus.booked) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No puedes modificar un slot reservado')),
+        const SnackBar(content: Text('No puedes modificar un slot con reserva activa')),
       );
       return;
     }
 
-    final newStatus =
-        slot.status == SlotStatus.blocked ? 'available' : 'blocked';
-    final action =
-        slot.status == SlotStatus.blocked ? 'desbloquear' : 'bloquear';
+    final newStatus = slot.status == SlotStatus.blocked ? 'available' : 'blocked';
+    final action = slot.status == SlotStatus.blocked ? 'desbloquear' : 'bloquear';
 
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text('¿${action.substring(0, 1).toUpperCase()}${action.substring(1)} slot?'),
+        title: Text('¿${action[0].toUpperCase()}${action.substring(1)} slot?'),
         content: Text(
-          'Slot: ${DateFormat('EEE d MMM HH:mm', 'es_CO').format(slot.startTime)}\n'
-          'Acción: $action',
+          '${DateFormat('HH:mm').format(slot.startTime)} – ${DateFormat('HH:mm').format(slot.endTime)}',
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancelar'),
-          ),
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancelar')),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
             child: Text(action.toUpperCase(),
-                style: TextStyle(
-                    color: newStatus == 'blocked'
-                        ? AppTheme.error
-                        : Colors.green)),
+                style: TextStyle(color: newStatus == 'blocked' ? AppTheme.error : Colors.green)),
           ),
         ],
       ),
@@ -104,9 +95,7 @@ class _ManageSlotsScreenState extends ConsumerState<ManageSlotsScreen> {
           .from(AppConstants.tableSlots)
           .update({'status': newStatus})
           .eq('id', slot.id);
-
       ref.invalidate(adminSlotsProvider(widget.courtId));
-
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -135,49 +124,122 @@ class _ManageSlotsScreenState extends ConsumerState<ManageSlotsScreen> {
       appBar: AppBar(title: Text('Slots — ${widget.courtName}')),
       body: slotsAsync.when(
         loading: () => const Center(
-          child: CircularProgressIndicator(color: AppTheme.primary),
-        ),
+            child: CircularProgressIndicator(color: AppTheme.primary)),
         error: (e, _) => Center(child: Text('Error: $e')),
         data: (slots) {
           if (slots.isEmpty) {
             return const Center(child: Text('No hay slots configurados'));
           }
 
-          // Agrupar por fecha
-          final byDate = <String, List<AvailabilitySlot>>{};
+          // Obtener fechas únicas
+          final dates = <DateTime>{};
           for (final slot in slots) {
-            final key = DateFormat('yyyy-MM-dd').format(slot.startTime);
-            byDate.putIfAbsent(key, () => []).add(slot);
+            dates.add(DateTime(slot.startTime.year, slot.startTime.month, slot.startTime.day));
           }
+          final sortedDates = dates.toList()..sort();
 
-          return ListView(
-            padding: const EdgeInsets.all(16),
-            children: byDate.entries.map((entry) {
-              final date = DateTime.parse(entry.key);
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    child: Text(
-                      dateFmt.format(date).toUpperCase(),
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.grey,
-                        letterSpacing: 0.8,
+          // Si no hay fecha seleccionada, usar la primera
+          final activeDate = _selectedDate ?? sortedDates.first;
+
+          // Filtrar slots de la fecha activa
+          final daySlots = slots.where((s) {
+            final d = DateTime(s.startTime.year, s.startTime.month, s.startTime.day);
+            return d == activeDate;
+          }).toList()
+            ..sort((a, b) => a.startTime.compareTo(b.startTime));
+
+          return Column(
+            children: [
+              // Selector de fechas horizontal
+              SizedBox(
+                height: 70,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  itemCount: sortedDates.length,
+                  itemBuilder: (_, i) {
+                    final date = sortedDates[i];
+                    final isActive = date == activeDate;
+                    final daySlotCount = slots.where((s) {
+                      final d = DateTime(s.startTime.year, s.startTime.month, s.startTime.day);
+                      return d == date;
+                    }).length;
+
+                    return GestureDetector(
+                      onTap: () => setState(() => _selectedDate = date),
+                      child: Container(
+                        width: 64,
+                        margin: const EdgeInsets.only(right: 8),
+                        decoration: BoxDecoration(
+                          color: isActive ? AppTheme.primary : Colors.grey.shade100,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              DateFormat('EEE', 'es_CO').format(date).toUpperCase(),
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                color: isActive ? Colors.white : Colors.grey,
+                              ),
+                            ),
+                            Text(
+                              '${date.day}',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: isActive ? Colors.white : Colors.black87,
+                              ),
+                            ),
+                            Text(
+                              '$daySlotCount slots',
+                              style: TextStyle(
+                                fontSize: 9,
+                                color: isActive ? Colors.white70 : Colors.grey,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
+                    );
+                  },
+                ),
+              ),
+
+              // Header de la fecha
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                child: Row(
+                  children: [
+                    Text(
+                      dateFmt.format(activeDate),
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
                     ),
-                  ),
-                  ...entry.value.map((slot) => _SlotTile(
-                        slot: slot,
-                        timeFmt: timeFmt,
-                        onTap: _isProcessing ? null : () => _toggleSlot(slot),
-                      )),
-                  const SizedBox(height: 8),
-                ],
-              );
-            }).toList(),
+                    const Spacer(),
+                    Text('${daySlots.length} slots',
+                        style: const TextStyle(color: Colors.grey, fontSize: 13)),
+                  ],
+                ),
+              ),
+              const Divider(),
+
+              // Lista de slots del día
+              Expanded(
+                child: daySlots.isEmpty
+                    ? const Center(child: Text('Sin slots para esta fecha'))
+                    : ListView.builder(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        itemCount: daySlots.length,
+                        itemBuilder: (_, i) => _SlotTile(
+                          slot: daySlots[i],
+                          timeFmt: timeFmt,
+                          onTap: _isProcessing ? null : () => _toggleSlot(daySlots[i]),
+                        ),
+                      ),
+              ),
+            ],
           );
         },
       ),
@@ -186,11 +248,7 @@ class _ManageSlotsScreenState extends ConsumerState<ManageSlotsScreen> {
 }
 
 class _SlotTile extends StatelessWidget {
-  const _SlotTile({
-    required this.slot,
-    required this.timeFmt,
-    required this.onTap,
-  });
+  const _SlotTile({required this.slot, required this.timeFmt, required this.onTap});
   final AvailabilitySlot slot;
   final DateFormat timeFmt;
   final VoidCallback? onTap;
@@ -233,9 +291,15 @@ class _SlotTile extends StatelessWidget {
           '${timeFmt.format(slot.startTime)} – ${timeFmt.format(slot.endTime)}',
           style: TextStyle(fontWeight: FontWeight.w600, color: textColor),
         ),
-        trailing: Text(label,
-            style: TextStyle(
-                fontSize: 12, color: textColor, fontWeight: FontWeight.bold)),
+        trailing: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          decoration: BoxDecoration(
+            color: textColor.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Text(label,
+              style: TextStyle(fontSize: 11, color: textColor, fontWeight: FontWeight.bold)),
+        ),
         onTap: onTap,
       ),
     );
