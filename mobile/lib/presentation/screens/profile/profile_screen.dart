@@ -329,6 +329,14 @@ class _ProfileContent extends ConsumerWidget {
                   content: Text('Próximamente: rosports.app/privacidad')),
             ),
           ),
+          // Admin — solo visible para court_admin y super_admin
+          if (user.role == UserRole.courtAdmin ||
+              user.role == UserRole.superAdmin)
+            _ProfileOption(
+              icon: Icons.admin_panel_settings_outlined,
+              label: 'Panel administrador',
+              onTap: () => context.push(AppRoutes.admin),
+            ),
           const Divider(),
           _ProfileOption(
             icon: Icons.logout,

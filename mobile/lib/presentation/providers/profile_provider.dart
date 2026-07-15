@@ -72,11 +72,12 @@ class ProfileNotifier extends StateNotifier<ProfileState> {
   }
 }
 
-/// Provider del perfil — depende del usuario autenticado actual
+/// Provider del perfil — se recrea automáticamente cuando el usuario cambia
 final profileProvider =
     StateNotifierProvider<ProfileNotifier, ProfileState>((ref) {
   final client = ref.watch(supabaseClientProvider);
-  // Obtiene el userId desde la sesión activa de Supabase directamente
+  // Escuchar cambios de auth para recrear el provider
+  final authState = ref.watch(authNotifierProvider);
   final userId = client.auth.currentUser?.id ?? '';
   return ProfileNotifier(client, userId);
 });
