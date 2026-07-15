@@ -33,12 +33,14 @@ final isSignedUpProvider =
   }
 });
 
-/// Provider para obtener la lista de jugadores inscritos
+/// Provider para obtener la lista de jugadores inscritos.
+/// Si la RLS no permite ver todos, al menos muestra los que puede ver.
 final matchPlayersProvider =
     FutureProvider.autoDispose.family<List<Map<String, dynamic>>, String>((ref, matchId) async {
   final client = ref.watch(supabaseClientProvider);
 
   try {
+    // Intentar obtener todos los signups (funciona si eres creador o la RLS lo permite)
     final data = await client
         .from(AppConstants.tableMatchSignups)
         .select('''

@@ -49,6 +49,16 @@ class MatchRepositoryImpl implements MatchRepository {
         .eq('id', matchId)
         .single();
 
+    // Calcular spots_taken real desde signups
+    final signups = await _supabase
+        .from(AppConstants.tableMatchSignups)
+        .select('id')
+        .eq('match_id', matchId)
+        .eq('status', 'signed');
+    
+    final realSpotsTaken = (signups as List).length;
+    data['spots_taken'] = realSpotsTaken;
+
     return MatchModel.fromJson(data).toEntity();
   }
 
