@@ -21,9 +21,23 @@ final myMatchesProvider = FutureProvider<List<MatchEntity>>((ref) async {
       .eq('user_id', userId)
       .eq('status', 'signed');
 
-  if (signups.isEmpty) return [];
+  final signupMatchIds = signups.map((s) => s['match_id'] as String).toSet();
 
-  final matchIds = signups.map((s) => s['match_id'] as String).toList();
+  // También obtener partidos que yo creé (por si el auto-signup falló)
+  final createdMatches = await client
+      .from(AppConstants.tableMatches)
+      .select('id')
+      .eq('creator_user_id', userId);
+
+  final createdIds = (createdMatches as List)
+      .map((m) => m['id'] as String)
+      .toSet();
+
+  // Unir ambos sets
+  final allMatchIds = {...signupMatchIds, ...createdIds};
+  if (allMatchIds.isEmpty) return [];
+
+  final matchIds = allMatchIds.toList();
 
   final data = await client
       .from(AppConstants.tableMatches)
