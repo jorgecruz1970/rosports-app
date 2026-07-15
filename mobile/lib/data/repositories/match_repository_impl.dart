@@ -107,15 +107,18 @@ class MatchRepositoryImpl implements MatchRepository {
   Future<void> joinMatch(String matchId) async {
     final userId = _supabase.auth.currentUser!.id;
 
-    // Verificar si ya está inscrito
-    final existing = await _supabase
+    // Verificar si ya está inscrito — filtro manual por si RLS devuelve signups ajenos
+    final allSignups = await _supabase
         .from(AppConstants.tableMatchSignups)
-        .select('id, status')
-        .eq('match_id', matchId)
-        .eq('user_id', userId)
-        .maybeSingle();
+        .select('id, user_id, status')
+        .eq('match_id', matchId);
 
-    if (existing != null) {
+    final mySignup = (allSignups as List)
+        .where((row) => row['user_id'] == userId)
+        .toList();
+
+    if (mySignup.isNotEmpty) {
+      final existing = mySignup.first;
       if (existing['status'] == 'signed') {
         throw Exception('Ya estás inscrito en este partido');
       }

@@ -8,22 +8,30 @@ import '../../../domain/entities/match_entity.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/match_provider.dart';
 
-/// Provider que verifica si el usuario actual está inscrito en un partido
+/// Provider que verifica si el usuario actual está inscrito en un partido.
+/// Usa un approach defensivo: consulta directa con user_id explícito.
 final isSignedUpProvider =
     FutureProvider.family<bool, String>((ref, matchId) async {
   final client = ref.watch(supabaseClientProvider);
   final userId = client.auth.currentUser?.id;
   if (userId == null) return false;
 
-  // Usar count para evitar ambigüedad con RLS que permite ver signups ajenos
-  final data = await client
-      .from(AppConstants.tableMatchSignups)
-      .select('id')
-      .eq('match_id', matchId)
-      .eq('user_id', userId)
-      .eq('status', 'signed');
+  try {
+    final data = await client
+        .from(AppConstants.tableMatchSignups)
+        .select('id, user_id')
+        .eq('match_id', matchId)
+        .eq('status', 'signed');
 
-  return (data as List).isNotEmpty;
+    // Filtrar manualmente por userId (por si RLS devuelve signups ajenos al creador)
+    final mySignups = (data as List)
+        .where((row) => row['user_id'] == userId)
+        .toList();
+
+    return mySignups.isNotEmpty;
+  } catch (_) {
+    return false;
+  }
 });
 
 /// Provider para obtener la lista de jugadores inscritos
@@ -31,17 +39,22 @@ final matchPlayersProvider =
     FutureProvider.family<List<Map<String, dynamic>>, String>((ref, matchId) async {
   final client = ref.watch(supabaseClientProvider);
 
-  final data = await client
-      .from(AppConstants.tableMatchSignups)
-      .select('''
-        id, user_id, status, created_at,
-        profiles:user_id(name, level, avatar_url)
-      ''')
-      .eq('match_id', matchId)
-      .eq('status', 'signed')
-      .order('created_at');
+  try {
+    final data = await client
+        .from(AppConstants.tableMatchSignups)
+        .select('''
+          id, user_id, status, created_at,
+          profiles:user_id(name, level, avatar_url)
+        ''')
+        .eq('match_id', matchId)
+        .eq('status', 'signed')
+        .order('created_at');
 
-  return List<Map<String, dynamic>>.from(data);
+    return List<Map<String, dynamic>>.from(data);
+  } catch (_) {
+    // Si RLS no permite ver, retornar vacío
+    return [];
+  }
 });
 
 class MatchDetailScreen extends ConsumerWidget {
