@@ -32,7 +32,8 @@ class PaymentException extends AppException {
 String mapAuthError(String code) {
   switch (code) {
     case 'invalid_credentials':
-      return 'Email o contraseña incorrectos';
+      return 'Email o contraseña incorrectos. '
+          'Si te registraste con Google, usa el botón "Continuar con Google"';
     case 'email_not_confirmed':
       return 'Debes confirmar tu email antes de iniciar sesión';
     case 'user_already_exists':

@@ -65,11 +65,20 @@ GoRouter appRouter(AppRouterRef ref) {
       final isOnAuthRoute = state.matchedLocation == AppRoutes.login ||
           state.matchedLocation == AppRoutes.register ||
           state.matchedLocation == AppRoutes.forgotPassword ||
-          state.matchedLocation == AppRoutes.splash;
+          state.matchedLocation == AppRoutes.splash ||
+          state.matchedLocation == AppRoutes.onboarding;
 
       if (!isAuth && !isOnAuthRoute) return AppRoutes.login;
-      if (isAuth && state.matchedLocation == AppRoutes.login)
-        return AppRoutes.home;
+      // Solo redirigir a home si la sesión NO ha expirado
+      if (isAuth && state.matchedLocation == AppRoutes.login) {
+        // Verificar que la sesión no esté expirada
+        final expiresAt = session.expiresAt;
+        if (expiresAt != null &&
+            DateTime.fromMillisecondsSinceEpoch(expiresAt * 1000)
+                .isAfter(DateTime.now())) {
+          return AppRoutes.home;
+        }
+      }
       return null;
     },
     routes: [
