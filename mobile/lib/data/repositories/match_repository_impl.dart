@@ -21,7 +21,8 @@ class MatchRepositoryImpl implements MatchRepository {
           spots_total, spots_taken, price_per_player, level_min, level_max,
           is_public, signup_policy, status,
           courts(name, venues(name)),
-          sports(name)
+          sports(name),
+          match_signups(id, status)
         ''')
         .eq('status', 'open')
         .eq('is_public', true)
@@ -32,7 +33,15 @@ class MatchRepositoryImpl implements MatchRepository {
     }
 
     final data = await query.order('start_time');
-    return data.map((j) => MatchModel.fromJson(j).toEntity()).toList();
+
+    // Recalcular spots_taken desde signups incluidos en el join
+    return data.map((j) {
+      final signups = j['match_signups'] as List? ?? [];
+      final realSpotsTaken =
+          signups.where((s) => s['status'] == 'signed').length;
+      j['spots_taken'] = realSpotsTaken;
+      return MatchModel.fromJson(j).toEntity();
+    }).toList();
   }
 
   @override

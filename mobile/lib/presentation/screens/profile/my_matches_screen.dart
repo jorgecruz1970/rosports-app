@@ -32,16 +32,19 @@ final myMatchesProvider = FutureProvider<List<MatchEntity>>((ref) async {
         spots_total, spots_taken, price_per_player, level_min, level_max,
         is_public, signup_policy, status,
         courts(name, venues(name)),
-        sports(name)
+        sports(name),
+        match_signups(id, status)
       ''')
       .inFilter('id', matchIds)
       .order('start_time', ascending: false);
 
-  // Reuse MatchModel import
   return data.map((j) {
     final court = j['courts'] as Map<String, dynamic>? ?? {};
     final venue = court['venues'] as Map<String, dynamic>? ?? {};
     final sport = j['sports'] as Map<String, dynamic>? ?? {};
+    final matchSignups = j['match_signups'] as List? ?? [];
+    final realSpotsTaken =
+        matchSignups.where((s) => s['status'] == 'signed').length;
 
     return MatchEntity(
       id: j['id'] as String,
@@ -52,7 +55,7 @@ final myMatchesProvider = FutureProvider<List<MatchEntity>>((ref) async {
       startTime: DateTime.parse(j['start_time'] as String).toLocal(),
       endTime: DateTime.parse(j['end_time'] as String).toLocal(),
       spotsTotal: j['spots_total'] as int,
-      spotsTaken: (j['spots_taken'] as int?) ?? 0,
+      spotsTaken: realSpotsTaken,
       pricePerPlayer: (j['price_per_player'] as num).toDouble(),
       status: _parseStatus(j['status'] as String? ?? 'open'),
       levelMin: j['level_min'] as String?,
