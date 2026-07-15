@@ -140,7 +140,11 @@ class _GenerateSlotsScreenState extends ConsumerState<GenerateSlotsScreen> {
 
       for (var i = 0; i < newSlots.length; i += 50) {
         final batch = newSlots.sublist(i, i + 50 > newSlots.length ? newSlots.length : i + 50);
-        await client.from(AppConstants.tableSlots).insert(batch);
+        await client.from(AppConstants.tableSlots).upsert(
+          batch,
+          onConflict: 'court_id,start_time',
+          ignoreDuplicates: true,
+        );
       }
 
       setState(() => _generatedCount = newSlots.length);
