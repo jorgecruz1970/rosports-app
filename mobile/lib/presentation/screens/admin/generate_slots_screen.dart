@@ -118,18 +118,45 @@ class _GenerateSlotsScreenState extends ConsumerState<GenerateSlotsScreen> {
         return;
       }
 
+      // Verificar duplicados: obtener slots existentes en el rango
+      final existingSlots = await client
+          .from(AppConstants.tableSlots)
+          .select('start_time')
+          .eq('court_id', widget.courtId)
+          .gte('start_time', _startDate.toUtc().toIso8601String())
+          .lte('start_time', _endDate.add(const Duration(days: 1)).toUtc().toIso8601String());
+
+      final existingTimes = (existingSlots as List)
+          .map((s) => s['start_time'] as String)
+          .toSet();
+
+      // Filtrar slots que ya existen
+      final newSlots = slots
+          .where((s) => !existingTimes.contains(s['start_time']))
+          .toList();
+
+      if (newSlots.isEmpty) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Todos los slots ya existen para este rango')),
+          );
+        }
+        setState(() => _isGenerating = false);
+        return;
+      }
+
       // Insertar en lotes de 50
-      for (var i = 0; i < slots.length; i += 50) {
-        final batch = slots.sublist(i, i + 50 > slots.length ? slots.length : i + 50);
+      for (var i = 0; i < newSlots.length; i += 50) {
+        final batch = newSlots.sublist(i, i + 50 > newSlots.length ? newSlots.length : i + 50);
         await client.from(AppConstants.tableSlots).insert(batch);
       }
 
-      setState(() => _generatedCount = slots.length);
+      setState(() => _generatedCount = newSlots.length);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('¡${slots.length} slots generados!'),
+            content: Text('¡${newSlots.length} slots generados! (${slots.length - newSlots.length} duplicados omitidos)'),
             backgroundColor: Colors.green,
           ),
         );
@@ -294,13 +321,17 @@ class _GenerateSlotsScreenState extends ConsumerState<GenerateSlotsScreen> {
 
             // Botón generar
             ElevatedButton.icon(
-              onPressed: _isGenerating ? null : _generate,
+              onPressed: (_isGenerating || _generatedCount > 0) ? null : _generate,
               icon: _isGenerating
                   ? const SizedBox(
                       width: 20, height: 20,
                       child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                  : const Icon(Icons.auto_awesome),
-              label: Text(_isGenerating ? 'Generando...' : 'Generar slots'),
+                  : Icon(_generatedCount > 0 ? Icons.check : Icons.auto_awesome),
+              label: Text(_isGenerating
+                  ? 'Generando...'
+                  : _generatedCount > 0
+                      ? 'Slots generados ✓'
+                      : 'Generar slots'),
             ),
           ],
         ),
