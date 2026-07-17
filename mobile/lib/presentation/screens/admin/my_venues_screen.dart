@@ -19,7 +19,7 @@ final myVenuesProvider =
       .from(AppConstants.tableVenues)
       .select('''
         id, name, address, is_active,
-        courts(id, name, sport_id, price_per_hour, is_active, sports(name))
+        courts(id, name, sport_id, price_per_hour, surface_type, lights, is_active, sports(name))
       ''')
       .eq('owner_user_id', userId)
       .order('name');
