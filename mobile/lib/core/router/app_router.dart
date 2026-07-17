@@ -4,6 +4,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../presentation/screens/admin/admin_dashboard_screen.dart';
+import '../../presentation/screens/admin/admin_reports_screen.dart';
 import '../../presentation/screens/admin/create_court_screen.dart';
 import '../../presentation/screens/admin/create_venue_screen.dart';
 import '../../presentation/screens/admin/edit_court_screen.dart';
@@ -33,6 +34,7 @@ import '../../presentation/screens/profile/edit_profile_screen.dart';
 import '../../presentation/screens/profile/my_matches_screen.dart';
 import '../../presentation/screens/profile/payment_history_screen.dart';
 import '../../presentation/screens/profile/profile_screen.dart';
+import '../../presentation/screens/profile/reservations_history_screen.dart';
 import '../../presentation/screens/splash_screen.dart';
 
 part 'app_router.g.dart';
@@ -58,10 +60,12 @@ abstract class AppRoutes {
   static const editProfile = '/profile/edit';
   static const myMatches = '/profile/matches';
   static const paymentHistory = '/profile/payments';
+  static const reservationsHistory = '/profile/reservations';
   static const accountSettings = '/profile/settings';
   static const legal = '/legal';
   static const notifications = '/notifications';
   static const admin = '/admin';
+  static const adminReports = '/admin/reports';
   static const adminSlots = '/admin/slots';
   static const adminVenues = '/admin/venues';
   static const adminCreateVenue = '/admin/venues/create';
@@ -166,6 +170,9 @@ GoRouter appRouter(AppRouterRef ref) {
           path: AppRoutes.accountSettings,
           builder: (c, s) => const AccountSettingsScreen()),
       GoRoute(
+          path: AppRoutes.reservationsHistory,
+          builder: (c, s) => const ReservationsHistoryScreen()),
+      GoRoute(
         path: AppRoutes.legal,
         builder: (c, s) {
           final extra = s.extra as Map<String, dynamic>? ?? {};
@@ -182,6 +189,9 @@ GoRouter appRouter(AppRouterRef ref) {
       GoRoute(
           path: AppRoutes.admin,
           builder: (c, s) => const AdminDashboardScreen()),
+      GoRoute(
+          path: AppRoutes.adminReports,
+          builder: (c, s) => const AdminReportsScreen()),
       GoRoute(
         path: AppRoutes.adminSlots,
         builder: (c, s) {

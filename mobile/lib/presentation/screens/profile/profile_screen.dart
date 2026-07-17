@@ -317,6 +317,11 @@ class _ProfileContent extends ConsumerWidget {
             onTap: () => context.push(AppRoutes.notifications),
           ),
           _ProfileOption(
+            icon: Icons.event_note_outlined,
+            label: 'Historial de reservas',
+            onTap: () => context.push(AppRoutes.reservationsHistory),
+          ),
+          _ProfileOption(
             icon: Icons.payment_outlined,
             label: 'Historial de pagos',
             onTap: () => context.push(AppRoutes.paymentHistory),
