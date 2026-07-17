@@ -159,6 +159,8 @@ class _SportFilterChips extends ConsumerWidget {
       {'id': null, 'name': 'Todos'},
       {'id': '22222222-0000-0000-0000-000000000001', 'name': 'Fútbol 5'},
       {'id': '22222222-0000-0000-0000-000000000002', 'name': 'Fútbol 7'},
+      {'id': '22222222-0000-0000-0000-000000000003', 'name': 'Pádel'},
+      {'id': '22222222-0000-0000-0000-000000000004', 'name': 'Baloncesto'},
     ];
 
     return SizedBox(

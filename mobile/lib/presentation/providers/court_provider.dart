@@ -39,7 +39,7 @@ final courtFiltersProvider =
 // ── Listado de canchas ────────────────────────────────────────────────────────
 
 final courtsProvider =
-    FutureProvider.family<List<CourtEntity>, CourtFilters>((ref, filters) {
+    FutureProvider.autoDispose.family<List<CourtEntity>, CourtFilters>((ref, filters) {
   final repo = ref.watch(courtRepositoryProvider);
   return repo.getCourts(
     cityId: filters.cityId,
@@ -51,7 +51,7 @@ final courtsProvider =
 // ── Detalle de cancha ─────────────────────────────────────────────────────────
 
 final courtDetailProvider =
-    FutureProvider.family<CourtEntity, String>((ref, courtId) {
+    FutureProvider.autoDispose.family<CourtEntity, String>((ref, courtId) {
   final repo = ref.watch(courtRepositoryProvider);
   return repo.getCourtById(courtId);
 });
@@ -59,7 +59,7 @@ final courtDetailProvider =
 // ── Disponibilidad de una cancha (2 semanas desde hoy) ───────────────────────
 
 final courtAvailabilityProvider =
-    FutureProvider.family<List<AvailabilitySlot>, String>((ref, courtId) {
+    FutureProvider.autoDispose.family<List<AvailabilitySlot>, String>((ref, courtId) {
   final repo = ref.watch(courtRepositoryProvider);
   final now = DateTime.now();
   return repo.getAvailability(

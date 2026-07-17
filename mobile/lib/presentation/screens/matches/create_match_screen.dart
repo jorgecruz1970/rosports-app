@@ -134,14 +134,32 @@ class _CreateMatchScreenState extends ConsumerState<CreateMatchScreen> {
 
   Widget _buildSlotSelection() {
     final slotsAsync =
-        ref.watch(courtAvailabilityStreamProvider(_selectedCourt!.id));
+        ref.watch(courtAvailabilityProvider(_selectedCourt!.id));
     final dateFmt = DateFormat('EEE d MMM', 'es_CO');
     final timeFmt = DateFormat('HH:mm');
 
     return slotsAsync.when(
       loading: () =>
           const Center(child: CircularProgressIndicator(color: AppTheme.primary)),
-      error: (e, _) => Center(child: Text('Error: $e')),
+      error: (e, _) => Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error_outline, size: 48, color: Colors.grey),
+              const SizedBox(height: 12),
+              const Text('No se pudieron cargar los horarios',
+                  style: TextStyle(color: Colors.grey)),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () => setState(() => _step = 0),
+                child: const Text('Elegir otra cancha'),
+              ),
+            ],
+          ),
+        ),
+      ),
       data: (slots) {
         final available = slots.where((s) => s.isAvailable).toList();
         if (available.isEmpty) {
