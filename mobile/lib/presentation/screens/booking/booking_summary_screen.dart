@@ -196,7 +196,7 @@ class BookingSummaryScreen extends ConsumerWidget {
                       if (reservation == null || !context.mounted) return;
 
                       // Invalidar cache de disponibilidad para que el slot aparezca como ocupado
-                      ref.invalidate(courtAvailabilityStreamProvider(court.id));
+                      ref.invalidate(courtAvailabilityProvider(court.id));
                       ref.invalidate(myReservationsProvider);
 
                       // En sandbox (sin credenciales PayU), ir directo a confirmación

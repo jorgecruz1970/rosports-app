@@ -17,7 +17,7 @@ class CourtDetailScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final courtAsync = ref.watch(courtDetailProvider(courtId));
-    final slotsAsync = ref.watch(courtAvailabilityStreamProvider(courtId));
+    final slotsAsync = ref.watch(courtAvailabilityProvider(courtId));
 
     return courtAsync.when(
       loading: () => const Scaffold(
