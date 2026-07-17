@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
+import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../domain/entities/court_entity.dart';
 import '../../providers/court_provider.dart';
@@ -30,7 +31,16 @@ class _CourtsScreenState extends ConsumerState<CourtsScreen> {
     final courtsAsync = ref.watch(courtsProvider(filters));
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Canchas disponibles')),
+      appBar: AppBar(
+        title: const Text('Canchas disponibles'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.map_outlined),
+            onPressed: () => context.push(AppRoutes.courtsMap),
+            tooltip: 'Ver en mapa',
+          ),
+        ],
+      ),
       body: Column(
         children: [
           // Búsqueda

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_theme.dart';
@@ -127,7 +129,16 @@ class _MatchDetailContent extends ConsumerWidget {
     });
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Detalle del partido')),
+      appBar: AppBar(
+        title: const Text('Detalle del partido'),
+        actions: [
+          if (match.isOpen)
+            IconButton(
+              icon: const Icon(Icons.share),
+              onPressed: () => _shareMatch(context),
+            ),
+        ],
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -330,6 +341,20 @@ class _MatchDetailContent extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _shareMatch(BuildContext context) async {
+    final dateFmt = DateFormat('EEE d MMM — HH:mm', 'es_CO');
+    final moneyFmt = NumberFormat('#,###', 'es_CO');
+    final text = '⚽ ¡Únete a mi partido!\n\n'
+        '${match.sportName} — ${match.courtName}\n'
+        '📅 ${dateFmt.format(match.startTime)}\n'
+        '👥 ${match.spotsAvailable} plazas disponibles\n'
+        '💰 \$${moneyFmt.format(match.pricePerPlayer)} COP / jugador\n\n'
+        'Descarga ROSports y busca el partido:\n'
+        'https://rosports.app/matches/${match.id}';
+
+    await Share.share(text, subject: 'Partido de ${match.sportName}');
   }
 
   Future<void> _confirmLeave(BuildContext context, WidgetRef ref) async {

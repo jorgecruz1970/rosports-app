@@ -15,8 +15,10 @@ import '../../presentation/screens/auth/register_screen.dart';
 import '../../presentation/screens/booking/booking_confirmation_screen.dart';
 import '../../presentation/screens/booking/booking_summary_screen.dart';
 import '../../presentation/screens/courts/court_detail_screen.dart';
+import '../../presentation/screens/courts/courts_map_screen.dart';
 import '../../presentation/screens/courts/courts_screen.dart';
 import '../../presentation/screens/home_screen.dart';
+import '../../presentation/screens/legal/legal_screen.dart';
 import '../../presentation/screens/matches/create_match_screen.dart';
 import '../../presentation/screens/matches/match_detail_screen.dart';
 import '../../presentation/screens/matches/matches_screen.dart';
@@ -24,6 +26,7 @@ import '../../presentation/screens/notifications/notifications_screen.dart';
 import '../../presentation/screens/onboarding/onboarding_screen.dart';
 import '../../presentation/screens/payment/payment_result_screen.dart';
 import '../../presentation/screens/payment/payment_webview_screen.dart';
+import '../../presentation/screens/profile/account_settings_screen.dart';
 import '../../presentation/screens/profile/edit_profile_screen.dart';
 import '../../presentation/screens/profile/my_matches_screen.dart';
 import '../../presentation/screens/profile/payment_history_screen.dart';
@@ -40,6 +43,7 @@ abstract class AppRoutes {
   static const forgotPassword = '/forgot-password';
   static const home = '/home';
   static const courts = '/courts';
+  static const courtsMap = '/courts/map';
   static const courtDetail = '/courts/:id';
   static const bookingSummary = '/booking/summary';
   static const bookingConfirm = '/booking/confirmation';
@@ -52,6 +56,8 @@ abstract class AppRoutes {
   static const editProfile = '/profile/edit';
   static const myMatches = '/profile/matches';
   static const paymentHistory = '/profile/payments';
+  static const accountSettings = '/profile/settings';
+  static const legal = '/legal';
   static const notifications = '/notifications';
   static const admin = '/admin';
   static const adminSlots = '/admin/slots';
@@ -103,6 +109,9 @@ GoRouter appRouter(AppRouterRef ref) {
       GoRoute(path: AppRoutes.home, builder: (c, s) => const HomeScreen()),
       GoRoute(path: AppRoutes.courts, builder: (c, s) => const CourtsScreen()),
       GoRoute(
+          path: AppRoutes.courtsMap,
+          builder: (c, s) => const CourtsMapScreen()),
+      GoRoute(
         path: AppRoutes.courtDetail,
         builder: (c, s) => CourtDetailScreen(courtId: s.pathParameters['id']!),
       ),
@@ -149,6 +158,20 @@ GoRouter appRouter(AppRouterRef ref) {
       GoRoute(
           path: AppRoutes.paymentHistory,
           builder: (c, s) => const PaymentHistoryScreen()),
+      GoRoute(
+          path: AppRoutes.accountSettings,
+          builder: (c, s) => const AccountSettingsScreen()),
+      GoRoute(
+        path: AppRoutes.legal,
+        builder: (c, s) {
+          final extra = s.extra as Map<String, dynamic>? ?? {};
+          final isPrivacy = extra['isPrivacy'] as bool? ?? true;
+          return LegalContentScreen(
+            title: isPrivacy ? 'Política de privacidad' : 'Términos y condiciones',
+            isPrivacy: isPrivacy,
+          );
+        },
+      ),
       GoRoute(
           path: AppRoutes.notifications,
           builder: (c, s) => const NotificationsScreen()),
