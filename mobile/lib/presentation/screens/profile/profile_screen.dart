@@ -324,10 +324,17 @@ class _ProfileContent extends ConsumerWidget {
           _ProfileOption(
             icon: Icons.privacy_tip_outlined,
             label: 'Política de privacidad',
-            onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                  content: Text('Próximamente: rosports.app/privacidad')),
-            ),
+            onTap: () => context.push(AppRoutes.legal, extra: {'isPrivacy': true}),
+          ),
+          _ProfileOption(
+            icon: Icons.description_outlined,
+            label: 'Términos y condiciones',
+            onTap: () => context.push(AppRoutes.legal, extra: {'isPrivacy': false}),
+          ),
+          _ProfileOption(
+            icon: Icons.settings_outlined,
+            label: 'Configuración de cuenta',
+            onTap: () => context.push(AppRoutes.accountSettings),
           ),
           // Admin — solo visible para court_admin y super_admin
           if (user.role == UserRole.courtAdmin ||
