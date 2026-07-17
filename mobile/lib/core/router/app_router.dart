@@ -6,6 +6,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../presentation/screens/admin/admin_dashboard_screen.dart';
 import '../../presentation/screens/admin/create_court_screen.dart';
 import '../../presentation/screens/admin/create_venue_screen.dart';
+import '../../presentation/screens/admin/edit_court_screen.dart';
+import '../../presentation/screens/admin/edit_venue_screen.dart';
 import '../../presentation/screens/admin/generate_slots_screen.dart';
 import '../../presentation/screens/admin/manage_slots_screen.dart';
 import '../../presentation/screens/admin/my_venues_screen.dart';
@@ -64,6 +66,8 @@ abstract class AppRoutes {
   static const adminVenues = '/admin/venues';
   static const adminCreateVenue = '/admin/venues/create';
   static const adminCreateCourt = '/admin/courts/create';
+  static const adminEditVenue = '/admin/venues/edit';
+  static const adminEditCourt = '/admin/courts/edit';
   static const adminGenerateSlots = '/admin/slots/generate';
 }
 
@@ -201,6 +205,26 @@ GoRouter appRouter(AppRouterRef ref) {
           return CreateCourtScreen(
             venueId: extra['venueId']!,
             venueName: extra['venueName']!,
+          );
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.adminEditVenue,
+        builder: (c, s) {
+          final extra = s.extra as Map<String, dynamic>;
+          return EditVenueScreen(
+            venueId: extra['venueId'] as String,
+            initialData: extra,
+          );
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.adminEditCourt,
+        builder: (c, s) {
+          final extra = s.extra as Map<String, dynamic>;
+          return EditCourtScreen(
+            courtId: extra['courtId'] as String,
+            initialData: extra,
           );
         },
       ),

@@ -111,6 +111,20 @@ class MyVenuesScreen extends ConsumerWidget {
                                 ],
                               ),
                             ),
+                            IconButton(
+                              icon: const Icon(Icons.edit_outlined, size: 20),
+                              color: Colors.grey,
+                              onPressed: () => context.push(
+                                AppRoutes.adminEditVenue,
+                                extra: {
+                                  'venueId': venue['id'] as String,
+                                  'name': venue['name'] as String,
+                                  'address': venue['address'] as String? ?? '',
+                                  'lat': venue['lat'],
+                                  'lng': venue['lng'],
+                                },
+                              ),
+                            ),
                           ],
                         ),
                         const SizedBox(height: 12),
@@ -134,11 +148,32 @@ class MyVenuesScreen extends ConsumerWidget {
                                   color: AppTheme.primary, size: 20),
                               title: Text(court['name'] as String? ?? 'Cancha'),
                               subtitle: Text(sport['name'] as String? ?? ''),
-                              trailing: Text(
-                                '\$${moneyFmt.format(court['price_per_hour'])}/h',
-                                style: const TextStyle(
-                                    color: AppTheme.primary,
-                                    fontWeight: FontWeight.bold),
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    '\$${moneyFmt.format(court['price_per_hour'])}/h',
+                                    style: const TextStyle(
+                                        color: AppTheme.primary,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  IconButton(
+                                    icon: const Icon(Icons.edit_outlined, size: 18),
+                                    color: Colors.grey,
+                                    onPressed: () => context.push(
+                                      AppRoutes.adminEditCourt,
+                                      extra: {
+                                        'courtId': court['id'] as String,
+                                        'name': court['name'] as String? ?? '',
+                                        'sport_id': court['sport_id'] as String?,
+                                        'price_per_hour': court['price_per_hour'],
+                                        'surface_type': court['surface_type'] as String?,
+                                        'lights': court['lights'] as bool?,
+                                      },
+                                    ),
+                                  ),
+                                ],
                               ),
                               onTap: () => context.push(
                                 AppRoutes.adminSlots,
